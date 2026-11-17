@@ -58,10 +58,15 @@ Um peso é **um único número decimal** (ex: `0.0037`, `-1.284`, `0.551`).
 
 Cada peso controla **quanto um sinal é amplificado ou atenuado** ao passar de um neurônio para outro dentro da rede.
 
-```
-Neurônio A ──[peso: 0.8]──► Neurônio B    (sinal forte)
-Neurônio A ──[peso: 0.01]──► Neurônio C   (sinal quase ignorado)
-Neurônio A ──[peso: -0.5]──► Neurônio D   (sinal invertido/inibido)
+```mermaid
+flowchart LR
+    A["Neurônio A"] -->|peso: 0.80 (forte)| B["Neurônio B — ativado"]
+    A -->|peso: 0.01 (quase zero)| C["Neurônio C — ignorado"]
+    A -->|peso: -0.50 (negativo)| D["Neurônio D — inibido"]
+
+    style B fill:#ecfdf5,stroke:#059669,color:#064e3b
+    style C fill:#f8fafc,stroke:#94a3b8,color:#475569
+    style D fill:#fef2f2,stroke:#dc2626,color:#7f1d1d
 ```
 
 Isoladamente, um peso não significa nada. **O conhecimento emerge do padrão coletivo de bilhões de pesos trabalhando juntos** — assim como uma imagem emerge de milhões de pixels, mas nenhum pixel sozinho "é" a imagem.

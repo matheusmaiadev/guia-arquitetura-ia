@@ -46,15 +46,17 @@ treinar = **ajustar bilhões de pesos (números)** via gradiente descendente at�
 
 A diferença entre as fases de treinamento **não é o mecanismo** (é sempre o mesmo loop de ajuste de pesos), e sim **com quais dados, quanto do modelo você mexe, e com que objetivo**:
 
-```
-        MESMO MECANISMO (ajustar pesos via gradiente)
-                          │
-      ┌───────────────────┼───────────────────┐
-      ▼                   ▼                   ▼
- PRÉ-TREINO          FINE-TUNING          ALINHAMENTO
- (dados gerais,      (dados do seu        (dados de preferência
-  todo o modelo,      domínio, parte       humana, ajuste fino
-  do zero)            do modelo)           de comportamento)
+```mermaid
+flowchart TD
+    M["MESMO MECANISMO\nAjustar pesos via gradiente descendente"]
+    M --> P["1. PRÉ-TREINO\nDados gerais da web · Todo o modelo (do zero)"]
+    M --> FT["2. FINE-TUNING\nDados do seu domínio · Parte do modelo (adaptação)"]
+    M --> AL["3. ALINHAMENTO\nPreferência humana (RLHF/DPO) · Ajuste de comportamento"]
+
+    style M fill:#eff6ff,stroke:#2563eb,color:#1e3a8a
+    style P fill:#fef2f2,stroke:#dc2626,color:#7f1d1d
+    style FT fill:#ecfdf5,stroke:#059669,color:#064e3b
+    style AL fill:#f5f3ff,stroke:#7c3aed,color:#3b0764
 ```
 
 ---
@@ -357,23 +359,15 @@ treinar/servir sem manter GPU ligada o tempo todo.
 
 ## 10. Como isso se conecta ao resto da coletânea
 
-```
- Módulo 1 (você está aqui)
-   ├─ o-que-significa-aprender ──► base: o que é ajustar pesos
-   └─ ESTE DOC ──────────────────► as fases; fine-tuning como adaptação
+```mermaid
+flowchart TD
+    M1["Módulo 1 — FUNDAMENTOS (você está aqui)\nAjuste de pesos, fases de treino e fine-tuning"]
+    --> M2["Módulo 2 — ORQUESTRAÇÃO\nO orquestrador chama o modelo (roteador escolhe base vs. fine-tuned)"]
+    M2 --> M3["Módulo 3 — RAG & DADOS\nAlternativa ao fine-tuning para injetar CONHECIMENTO factual"]
+    M3 --> M4["Módulo 4 — INFRAESTRUTURA\nOnde o treino e a inferência rodam (SageMaker, Serverless GPU)"]
+    M4 --> M5["Módulo 5 — GOVERNANÇA & FINOPS\nCusto de treinar vs. servir (Provisioned Throughput, tokens)"]
 
-        │ o modelo (com ou sem fine-tuning) é usado pelo...
-        ▼
- Módulo 2 — ORQUESTRAÇÃO ──► o orquestrador chama o modelo
-        │                     (o roteador 2.6 pode escolher entre
-        │                      modelo base vs. modelo fine-tunado)
-        ▼
- Módulo 3 — RAG ────────────► a alternativa ao fine-tuning p/ CONHECIMENTO
-        ▼
- Módulo 4 — INFRA ──────────► onde o treino/serviço roda (SageMaker,
-        │                     serverless GPU)
-        ▼
- Módulo 5 — GOVERNANÇA ─────► custo de treinar e de servir (throughput)
+    style M1 fill:#eff6ff,stroke:#2563eb,color:#1e3a8a
 ```
 
 - Se o problema é **conhecimento** → volte ao [Módulo 3 (RAG)](../03-rag-dados/01-bancos-vetoriais-e-documentos.md).

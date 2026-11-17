@@ -363,14 +363,15 @@ Este arquivo diz como **organizar os tensores** na arquitetura correta:
 
 O tokenizador é uma peça **separada do modelo**, mas essencial:
 
-```
-"Olá, como você está?" 
-    │
-    ▼ tokenizador
-[32, 2364, 28, 1303, 12354, 3366, 30]
-    │
-    ▼ embedding layer
-[[0.012, -0.034, ...], [0.078, 0.015, ...], ...]   ← vetores de 4096 dims
+```mermaid
+flowchart TD
+    T["Texto de entrada: 'Olá, como você está?'"]
+    -->|1. Tokenizador| ID["IDs numéricos: [32, 2364, 28, 1303, 12354, 3366, 30]"]
+    ID -->|2. Embedding Layer| V["Vetores densos (4096 dimensões por token)\n[[0.012, -0.034, ...], [0.078, 0.015, ...]]"]
+
+    style T fill:#f8fafc,stroke:#64748b,color:#0f172a
+    style ID fill:#eff6ff,stroke:#2563eb,color:#1e3a8a
+    style V fill:#ecfdf5,stroke:#059669,color:#064e3b
 ```
 
 ### Tipos de tokenizador:

@@ -85,16 +85,13 @@ make submodules
 A trilha vai do **conceito** (o que é um modelo) até a **produção** (custos, segurança, adoção),
 passando por **como construir** (orquestração, RAG) e **onde rodar** (infraestrutura).
 
-```text
-  ┌────────────────┐   ┌────────────────┐   ┌────────────────┐
-  │ 1. FUNDAMENTOS │──►│ 2. ORQUESTRAÇÃO│──►│  3. RAG/DADOS  │
-  │  "o que é"     │   │  "como coordenar"  │  "como dar dados"│
-  └────────────────┘   └────────────────┘   └────────┬───────┘
-                                                     │
-  ┌────────────────┐   ┌────────────────┐   ┌────────▼───────┐
-  │ 6. ADOÇÃO      │◄──│ 5. GOVERNANÇA  │◄──│ 4. INFRAESTRUT.│
-  │  "levar p/ empresa"│  "custo/segurança" │  "onde rodar"  │
-  └────────────────┘   └────────────────┘   └────────────────┘
+```mermaid
+flowchart LR
+    M1["1. FUNDAMENTOS\nO que é um LLM"] --> M2["2. ORQUESTRAÇÃO\nComo coordenar"]
+    M2 --> M3["3. RAG & DADOS\nComo dar conhecimento"]
+    M3 --> M4["4. INFRAESTRUTURA\nOnde hospedar e servir"]
+    M4 --> M5["5. GOVERNANÇA\nCusto, FinOps e segurança"]
+    M5 --> M6["6. ADOÇÃO\nEstratégia na empresa"]
 ```
 
 ---
@@ -220,32 +217,16 @@ Não quer seguir a trilha linear? Vá direto ao que precisa:
 
 ## 🧩 Como os temas se conectam
 
-```text
-                     ┌─────────────────────────────────────────┐
-                     │            USUÁRIO / APLICAÇÃO            │
-                     └───────────────────┬───────────────────────┘
-                                         │
-                            ┌────────────▼────────────┐
-             Módulo 2  ────►│       ORQUESTRADOR       │
-                            │  (coordena tudo)         │
-                            │                          │
-                            │  ┌────────────────────┐  │
-             Módulo 2.6 ───►│  │  Roteador de LLM   │  │
-                            │  └─────────┬──────────┘  │
-                            └────────────┼──────────────┘
-                          ┌──────────────┼──────────────┐
-                          ▼              ▼              ▼
-                   ┌────────────┐ ┌────────────┐ ┌────────────┐
-        Módulo 1 ─►│  MODELO    │ │  RAG /     │◄─ Módulo 3   │
-        Módulo 4 ─►│ (LLM +     │ │  Vetores   │ │  Tools/    │
-                   │  engine)   │ │            │ │  APIs      │
-                   └────────────┘ └────────────┘ └────────────┘
-                          │
-                  ┌───────▼───────────────────────────────────┐
-     Módulo 5 ───►│  GOVERNANÇA: custo, tokens, credenciais,   │
-                  │  acesso, segurança (envolve tudo acima)    │
-                  └────────────────────────────────────────────┘
-     Módulo 6 ───► ADOÇÃO: como tudo isso vira estratégia na empresa
+```mermaid
+flowchart TD
+    APP["USUÁRIO / APLICAÇÃO"] --> ORQ["Módulo 2 · ORQUESTRADOR\nCoordena fluxo, memória, tools e inclui o Roteador de LLM (2.6)"]
+    ORQ --> LLM["Módulos 1 & 4 · MODELO + ENGINE\nLLM e infraestrutura de inferência"]
+    ORQ --> RAG["Módulo 3 · RAG & VETORES\nBase de conhecimento e embeddings"]
+    ORQ --> TOOLS["Módulo 2 · TOOLS & APIs\nIntegrações externas e funções"]
+    LLM --> GOV["Módulo 5 · GOVERNANÇA, FINOPS & SEGURANÇA\nCusto, controle de tokens, credenciais, guardrails e observabilidade"]
+    RAG --> GOV
+    TOOLS --> GOV
+    GOV --> ADOC["Módulo 6 · ADOÇÃO NA EMPRESA\nComo transformar a arquitetura em estratégia organizacional"]
 ```
 
 - **Módulo 1** explica o **modelo** (a peça central).

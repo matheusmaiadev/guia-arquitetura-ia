@@ -201,14 +201,40 @@
     }
 
     .diagram-container {
-      padding: 18px 16px;
+      padding: 0 0 16px 0;
       margin: 18px 0;
       border: 1px solid var(--color-border);
+      border-top: 3px solid var(--color-primary);
       border-radius: 6px;
       overflow-x: auto;
       text-align: center;
       font-size: 13px !important;
       line-height: 1.3 !important;
+    }
+
+    .diagram-header,
+    .ascii-diagram-header,
+    .code-block-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 14px;
+      font-family: var(--font-heading);
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      background: var(--color-surface-alt);
+      color: var(--color-muted);
+      border-bottom: 1px solid var(--color-border-light);
+      text-align: left;
+    }
+
+    .diagram-container pre.mermaid {
+      padding: 16px 14px 4px 14px;
+      margin: 0;
+      background: transparent;
+      border: 0;
     }
 
     .diagram-container svg {
@@ -231,6 +257,87 @@
       padding: 0 !important;
       font-size: 13px !important;
       line-height: 1.3 !important;
+    }
+
+    .ascii-diagram {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-top: 3px solid var(--color-primary);
+      border-radius: 6px;
+      margin: 16px 0;
+      overflow-x: auto;
+    }
+
+    .ascii-diagram.is-tree {
+      border-top-color: #14b8a6;
+    }
+
+    .ascii-diagram pre.ascii-diagram-body {
+      margin: 0;
+      padding: 14px 18px;
+      background: transparent;
+      color: var(--color-ink);
+      border: 0;
+      border-radius: 0;
+      font-family: var(--font-mono);
+      font-size: 12.8px;
+      line-height: 1.18;
+      white-space: pre;
+      word-break: normal;
+      overflow-x: auto;
+    }
+
+    .ascii-diagram pre.ascii-diagram-body .ascii-box-ch {
+      color: var(--color-muted);
+    }
+
+    .ascii-diagram pre.ascii-diagram-body .ascii-arrow-ch {
+      color: var(--color-primary);
+      font-weight: 700;
+    }
+
+    .ascii-diagram pre.ascii-diagram-body .ascii-shade-ch {
+      color: var(--color-primary);
+    }
+
+    .ascii-diagram pre.ascii-diagram-body .ascii-comment {
+      color: #14b8a6;
+      font-style: italic;
+    }
+
+    .code-block-card {
+      border: 1px solid var(--color-border);
+      border-radius: 6px;
+      margin: 16px 0;
+      overflow: hidden;
+      background: #0f172a;
+    }
+
+    .code-block-card .code-block-header {
+      background: #1e293b;
+      color: #94a3b8;
+      border-bottom: 1px solid #334155;
+      padding: 5px 14px;
+    }
+
+    .code-lang-tag {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      color: #60a5fa;
+      letter-spacing: 0.06em;
+    }
+
+    .code-block-card pre {
+      margin: 0;
+      border: 0;
+      border-radius: 0;
+      background: #0f172a;
+      color: #f8fafc;
+      padding: 12px 16px;
+      font-size: 13px;
+      line-height: 1.5;
+      overflow-x: auto;
     }
 
     @media (max-width: 720px) {
@@ -1188,7 +1295,7 @@
       refreshAppearance: async () => {
         const nowDark = computeSheetDarkState();
         const diagramWrappers = Array.from(
-          shadow.querySelectorAll(".diagram-container[data-raw-graph]")
+          shadow.querySelectorAll(".diagram-svg-stage[data-raw-graph], .diagram-container[data-raw-graph]")
         );
         for (const w of diagramWrappers) {
           const pre = document.createElement("pre");

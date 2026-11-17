@@ -31,6 +31,64 @@ EMOJI_STRIP_RE = re.compile(
     r"^[\U00010000-\U0010ffff\u2600-\u27bf\ufe0f\u200d\s]+", flags=re.UNICODE
 )
 
+BOX_DRAWING_CHARS = set("┌┐└┘├┤┬┴┼─│▼▲◄►╔╗╚╝═║▓░")
+TREE_CHARS = ("├──", "└──", "├─", "└─")
+
+MERMAID_EMOJI_MAP: dict[str, str] = {
+    "1️⃣": "1. ",
+    "2️⃣": "2. ",
+    "3️⃣": "3. ",
+    "4️⃣": "4. ",
+    "5️⃣": "5. ",
+    "6️⃣": "6. ",
+    "7️⃣": "7. ",
+    "8️⃣": "8. ",
+    "9️⃣": "9. ",
+    "🌫️": "",
+    "✅": "✓ ",
+    "❌": "✗ ",
+    "😱": "",
+    "🧑": "",
+    "☁️": "",
+    "⚙️": "",
+    "📝": "",
+    "👀": "",
+    "🏋️": "",
+    "🗄️": "",
+    "🔑": "",
+    "📞": "",
+    "🚨": "",
+    "🗑️": "",
+    "🟢": "",
+    "🟡": "",
+    "🔴": "",
+    "🔵": "",
+    "🟠": "",
+    "🟣": "",
+}
+
+LANG_DISPLAY_NAMES: dict[str, str] = {
+    "python": "PYTHON",
+    "py": "PYTHON",
+    "typescript": "TYPESCRIPT",
+    "ts": "TYPESCRIPT",
+    "javascript": "JAVASCRIPT",
+    "js": "JAVASCRIPT",
+    "json": "JSON",
+    "bash": "BASH / SHELL",
+    "sh": "SHELL",
+    "zsh": "SHELL",
+    "sql": "SQL",
+    "yaml": "YAML",
+    "yml": "YAML",
+    "dockerfile": "DOCKERFILE",
+    "hcl": "TERRAFORM / HCL",
+    "toml": "TOML",
+    "html": "HTML",
+    "css": "CSS",
+    "xml": "XML",
+}
+
 CALLOUT_TYPES: dict[str, tuple[str, str]] = {
     "NOTE": ("callout-note", "Nota"),
     "INFO": ("callout-note", "Informação"),
@@ -120,9 +178,118 @@ def render_markdown_fragment(text: str) -> str:
     return markdown.markdown(text, extensions=["tables", "fenced_code", "sane_lists"])
 
 
+def normalize_mermaid_style_line(line: str) -> str:
+    m = re.match(r"^(\s*style\s+[A-Za-z0-9_-]+\s+)(.+)$", line)
+    if not m:
+        return line
+    prefix, rest = m.group(1), m.group(2).lower()
+    if any(k in rest for k in ("#8b0000", "#7f1d1d", "#3d0000", "#450a0a", "#ff0000", "#dc2626")):
+        return f"{prefix}fill:#fef2f2,stroke:#dc2626,color:#7f1d1d,stroke-width:1.5px"
+    if any(k in rest for k in ("#006400", "#065f46", "#2d6a1e", "#003d00", "#064e3b", "#059669")):
+        return f"{prefix}fill:#ecfdf5,stroke:#059669,color:#064e3b,stroke-width:1.5px"
+    if any(k in rest for k in ("#8b4500", "#8b6914", "#78350f", "#6a6a00", "#ffa500", "#d97706")):
+        return f"{prefix}fill:#fffbeb,stroke:#d97706,color:#78350f,stroke-width:1.5px"
+    if any(k in rest for k in ("#00008b", "#1e3a8a", "#0f3460", "#16213e", "#2563eb")):
+        return f"{prefix}fill:#eff6ff,stroke:#2563eb,color:#1e3a8a,stroke-width:1.5px"
+    if any(k in rest for k in ("#1a1a2e", "#0d1117", "#533483", "#115e59", "#7c3aed")):
+        return f"{prefix}fill:#f5f3ff,stroke:#7c3aed,color:#3b0764,stroke-width:1.5px"
+    return line
+
+
 def normalize_mermaid_code(raw_mermaid: str) -> str:
-    """Convert literal \\n inside Mermaid labels into <br/> so Mermaid v11 renders multi-line nodes cleanly."""
-    return raw_mermaid.replace("\\n", "<br/>")
+    """
+    1. Convert literal \\n inside Mermaid labels into <br/>
+    2. Strip/replace broken keycap & decorative emojis inside labels
+    3. Auto-reflow wide 'flowchart LR' / 'graph LR' (>= 4 nodes) into 'flowchart TD' so boxes stay 100% readable
+    4. Convert dark/neon 'style NODE fill:...' into high-contrast editorial pastel cards
+    """
+    code = raw_mermaid.replace("\\n", "<br/>")
+    for emo, repl in MERMAID_EMOJI_MAP.items():
+        code = code.replace(emo, repl)
+
+    # Count distinct node definitions or arrows in LR diagrams
+    node_defs = re.findall(r'\b[A-Za-z0-9_]+\s*[\[\(\{"]', code)
+    arrow_count = len(re.findall(r"-->|==>|-\.->", code))
+    if re.search(r"^\s*(?:flowchart|graph)\s+LR\b", code, flags=re.MULTILINE):
+        if len(node_defs) >= 5 or arrow_count >= 5:
+            code = re.sub(
+                r"^(\s*(?:flowchart|graph))\s+LR\b",
+                r"\1 TD",
+                code,
+                count=1,
+                flags=re.MULTILINE,
+            )
+
+    out_lines = [normalize_mermaid_style_line(ln) for ln in code.splitlines()]
+    return "\n".join(out_lines)
+
+
+def highlight_ascii_diagram_html(raw_text: str) -> str:
+    escaped_lines: list[str] = []
+    for line in raw_text.splitlines():
+        # Check for trailing comment starting with ← or //
+        comment_match = re.search(r"(\s+(?:←|◄──|//|#\s).*)$", line)
+        if comment_match:
+            main_part = line[: comment_match.start()]
+            comment_part = comment_match.group(1)
+        else:
+            main_part = line
+            comment_part = ""
+
+        buf: list[str] = []
+        for ch in main_part:
+            if ch in "▼▲◄►→←":
+                buf.append(f'<span class="ascii-arrow-ch">{html_lib.escape(ch)}</span>')
+            elif ch in "▓░":
+                buf.append(f'<span class="ascii-shade-ch">{html_lib.escape(ch)}</span>')
+            elif ch in "┌┐└┘├┤┬┴┼─│╔╗╚╝═║":
+                buf.append(f'<span class="ascii-box-ch">{html_lib.escape(ch)}</span>')
+            else:
+                buf.append(html_lib.escape(ch))
+
+        if comment_part:
+            buf.append(f'<span class="ascii-comment">{html_lib.escape(comment_part)}</span>')
+        escaped_lines.append("".join(buf))
+    return "\n".join(escaped_lines)
+
+
+def render_fenced_block_html(lang: str, block_lines: list[str]) -> str:
+    raw_content = "\n".join(block_lines).rstrip()
+    lang_clean = lang.strip().lower()
+
+    if lang_clean == "mermaid":
+        normalized_mmd = normalize_mermaid_code(raw_content)
+        escaped = html_lib.escape(normalized_mmd)
+        return (
+            '<figure class="diagram-container">'
+            '<div class="diagram-header"><span>DIAGRAMA DE ARQUITETURA / FLUXO</span></div>'
+            f'<div class="diagram-svg-stage"><pre class="mermaid">{escaped}</pre></div>'
+            "</figure>"
+        )
+
+    is_untagged_or_text = lang_clean in ("", "text", "ascii", "plaintext")
+    has_box_chars = any(ch in raw_content for ch in BOX_DRAWING_CHARS)
+
+    if is_untagged_or_text and has_box_chars:
+        is_tree = any(tc in raw_content for tc in TREE_CHARS) and ("/" in raw_content or ".md" in raw_content or ".json" in raw_content or ".yaml" in raw_content or ".py" in raw_content)
+        header_label = "ESTRUTURA DE DIRETÓRIOS E ARQUIVOS" if is_tree else "ESQUEMA TÉCNICO / ARQUITETURA"
+        extra_cls = " is-tree" if is_tree else ""
+        highlighted = highlight_ascii_diagram_html(raw_content)
+        return (
+            f'<figure class="ascii-diagram{extra_cls}">'
+            f'<figcaption class="ascii-diagram-header"><span>{header_label}</span></figcaption>'
+            f'<pre class="ascii-diagram-body">{highlighted}</pre>'
+            f"</figure>"
+        )
+
+    lang_badge = LANG_DISPLAY_NAMES.get(lang_clean, lang_clean.upper() if lang_clean else "CÓDIGO / EXEMPLO")
+    escaped_code = html_lib.escape(raw_content)
+    return (
+        '<div class="code-block-card">'
+        f'<div class="code-block-header"><span class="code-lang-tag">{html_lib.escape(lang_badge)}</span></div>'
+        f"<pre><code>{escaped_code}</code></pre>"
+        "</div>"
+    )
 
 
 def preprocess_markdown(md_text: str, strip_first_h1: bool = False) -> tuple[str, dict[str, str], str, str]:
@@ -140,26 +307,12 @@ def preprocess_markdown(md_text: str, strip_first_h1: bool = False) -> tuple[str
         placeholders[token] = raw_html
         return f"\n\n{token}\n\n"
 
-    in_outer_fence = False
-    outer_fence_char = ""
-    outer_fence_len = 0
     h1_seen = False
-    summary_collected = False
 
     i = 0
     while i < len(lines):
         line = lines[i]
         stripped = line.strip()
-
-        if in_outer_fence:
-            close_match = re.match(
-                rf"^({re.escape(outer_fence_char)}{{{outer_fence_len},}})\s*$", stripped
-            )
-            if close_match:
-                in_outer_fence = False
-            out_chunks.append(line)
-            i += 1
-            continue
 
         if not h1_seen and stripped.startswith("# "):
             h1_seen = True
@@ -167,7 +320,6 @@ def preprocess_markdown(md_text: str, strip_first_h1: bool = False) -> tuple[str
             extracted_title = EMOJI_STRIP_RE.sub("", raw_t).strip() or raw_t
             if strip_first_h1:
                 i += 1
-                # Also extract immediate lead blockquote as summary if not a callout
                 while i < len(lines) and lines[i].strip() == "":
                     i += 1
                 if (
@@ -183,8 +335,6 @@ def preprocess_markdown(md_text: str, strip_first_h1: bool = False) -> tuple[str
                         i += 1
                     raw_sum = " ".join(q_lines)
                     extracted_summary = re.sub(r"[*_`]", "", raw_sum)
-                    summary_collected = True
-                    # Skip immediate horizontal rule after lead quote
                     while i < len(lines) and lines[i].strip() == "":
                         i += 1
                     if i < len(lines) and re.match(r"^(?:---+|\*\*\*+|___+)\s*$", lines[i].strip()):
@@ -195,29 +345,19 @@ def preprocess_markdown(md_text: str, strip_first_h1: bool = False) -> tuple[str
         if fence_match:
             fence_token = fence_match.group(1)
             lang = (fence_match.group(2) or "").lower()
-            if lang == "mermaid" and len(fence_token) == 3:
-                block_lines: list[str] = []
+            fence_char = fence_token[0]
+            fence_len = len(fence_token)
+            block_lines: list[str] = []
+            i += 1
+            while i < len(lines) and not re.match(
+                rf"^({re.escape(fence_char)}{{{fence_len},}})\s*$", lines[i].strip()
+            ):
+                block_lines.append(lines[i])
                 i += 1
-                while i < len(lines) and not re.match(
-                    rf"^({re.escape(fence_token[0])}{{3,}})\s*$", lines[i].strip()
-                ):
-                    block_lines.append(lines[i])
-                    i += 1
-                if i < len(lines):
-                    i += 1
-                normalized_mmd = normalize_mermaid_code("\n".join(block_lines))
-                escaped = html_lib.escape(normalized_mmd)
-                out_chunks.append(
-                    stash_html(f'<div class="diagram-container"><pre class="mermaid">{escaped}</pre></div>')
-                )
-                continue
-            else:
-                in_outer_fence = True
-                outer_fence_char = fence_token[0]
-                outer_fence_len = len(fence_token)
-                out_chunks.append(line)
+            if i < len(lines):
                 i += 1
-                continue
+            out_chunks.append(stash_html(render_fenced_block_html(lang, block_lines)))
+            continue
 
         callout_match = re.match(r"^>\s*\[!([A-Za-z0-9_-]+)\]\s*(.*)$", line)
         if callout_match:
@@ -348,20 +488,26 @@ def html_to_pdf(browser: Browser, html_content: str, output_pdf: Path, header_la
                     mermaid.initialize({
                         startOnLoad: false,
                         theme: 'base',
-                        flowchart: { htmlLabels: true, curve: 'basis', padding: 14, nodeSpacing: 28, rankSpacing: 34 },
+                        flowchart: { htmlLabels: true, curve: 'basis', padding: 14, nodeSpacing: 26, rankSpacing: 30 },
                         themeVariables: {
                             fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
                             fontSize: '13px',
                             primaryColor: '#eff6ff',
                             primaryTextColor: '#0f172a',
-                            primaryBorderColor: '#1e40af',
-                            lineColor: '#1e40af',
+                            primaryBorderColor: '#2563eb',
+                            lineColor: '#2563eb',
                             edgeLabelBackground: '#ffffff',
                             secondaryColor: '#f8fafc',
                             tertiaryColor: '#ffffff'
                         }
                     });
-                    await mermaid.run({ querySelector: '.mermaid' });
+                    for (const el of document.querySelectorAll('.mermaid')) {
+                        try {
+                            await mermaid.run({ nodes: [el] });
+                        } catch (err) {
+                            console.warn('Mermaid error:', err);
+                        }
+                    }
                 }"""
             )
 
@@ -391,7 +537,6 @@ def discover_chapter_files() -> list[Path]:
         return files
     for md in sorted(DOCS_DIR.rglob("*.md")):
         if md.name == "README.md" and md.parent.parent == DOCS_DIR:
-            # Skip the short module index README.md when generating chapter PDFs
             continue
         files.append(md)
     return files
