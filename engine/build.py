@@ -271,7 +271,11 @@ def render_fenced_block_html(lang: str, block_lines: list[str]) -> str:
     has_box_chars = any(ch in raw_content for ch in BOX_DRAWING_CHARS)
 
     if is_untagged_or_text and has_box_chars:
-        is_tree = any(tc in raw_content for tc in TREE_CHARS) and ("/" in raw_content or ".md" in raw_content or ".json" in raw_content or ".yaml" in raw_content or ".py" in raw_content)
+        has_closed_boxes = "┐" in raw_content or "┘" in raw_content
+        is_tree = (
+            not has_closed_boxes
+            and ("├── " in raw_content or "└── " in raw_content or "├─ " in raw_content or "└─ " in raw_content)
+        )
         header_label = "ESTRUTURA DE DIRETÓRIOS E ARQUIVOS" if is_tree else "ESQUEMA TÉCNICO / ARQUITETURA"
         extra_cls = " is-tree" if is_tree else ""
         highlighted = highlight_ascii_diagram_html(raw_content)
@@ -506,6 +510,25 @@ def html_to_pdf(browser: Browser, html_content: str, output_pdf: Path, header_la
                             await mermaid.run({ nodes: [el] });
                         } catch (err) {
                             console.warn('Mermaid error:', err);
+                        }
+                    }
+                    for (const svg of document.querySelectorAll('.diagram-container svg')) {
+                        const vb = svg.getAttribute('viewBox');
+                        if (!vb) continue;
+                        const parts = vb.trim().split(/[\\s,]+/).map(Number);
+                        if (parts.length === 4 && parts[2] > 0 && parts[3] > 0) {
+                            let w = parts[2];
+                            let h = parts[3];
+                            const maxW = 640;
+                            const maxH = 420;
+                            const scale = Math.min(1, maxW / w, maxH / h);
+                            w = Math.round(w * scale);
+                            h = Math.round(h * scale);
+                            svg.setAttribute('width', w + 'px');
+                            svg.setAttribute('height', h + 'px');
+                            svg.style.width = w + 'px';
+                            svg.style.height = h + 'px';
+                            svg.style.maxWidth = '100%';
                         }
                     }
                 }"""

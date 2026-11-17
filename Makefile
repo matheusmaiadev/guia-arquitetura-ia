@@ -27,7 +27,7 @@ pdf:
 		echo "Erro: informe o arquivo. Ex: make pdf FILE=docs/01-fundamentos/05-treinamento-e-fine-tuning.md"; \
 		exit 1; \
 	fi
-	cd engine && uv run --python $(PYTHON_VERSION) python build.py --file "../$(FILE)" --theme $(THEME)
+	cd engine && uv run --python $(PYTHON_VERSION) python build.py --file "$(FILE)" --theme $(THEME)
 
 site:
 	cd engine && uv run --python $(PYTHON_VERSION) python site.py --theme $(THEME)
