@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ meta.title }}</title>
+  <style>
+{{ theme_css | safe }}
+  </style>
+</head>
+<body class="doc-topic">
+  <header class="unit-header">
+    <div class="unit-topbar">
+      <div class="unit-topbar-left">
+        <span class="unit-lang">GUIA DE ARQUITETURA E ENGENHARIA DE IA</span>
+        {% if meta.module_title %}
+        <span class="unit-sep">·</span>
+        <span class="unit-area">{{ meta.module_title }}</span>
+        {% endif %}
+      </div>
+      <div class="unit-topbar-right">
+        {% if meta.badge %}<span class="unit-meta-context">{{ meta.badge }}</span>{% endif %}
+      </div>
+    </div>
+
+    <div class="unit-title-row">
+      {% if meta.code %}
+      <div class="unit-number-box">Cap. {{ meta.code }}</div>
+      {% endif %}
+      <div class="unit-title-block">
+        <h1 class="unit-title">{{ meta.title }}</h1>
+        {% if meta.summary %}
+        <p class="unit-summary">{{ meta.summary }}</p>
+        {% endif %}
+      </div>
+    </div>
+  </header>
+
+  <main class="doc-content">
+    {{ body_html | safe }}
+  </main>
+</body>
+</html>

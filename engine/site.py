@@ -18,13 +18,15 @@ from typing import Any
 import markdown
 import yaml
 
-ENGINE_DIR = Path(__file__).resolve().parent
-ROOT_DIR = ENGINE_DIR.parent
-DOCS_DIR = ROOT_DIR / "docs"
-REPOS_DIR = ROOT_DIR / "repos"
-DIST_DIR = ROOT_DIR / "dist"
-CACHE_DIR = ENGINE_DIR / ".cache"
-THEMES_DIR = ENGINE_DIR / "themes"
+import build as engine_build
+
+ENGINE_DIR = engine_build.ENGINE_DIR
+ROOT_DIR = engine_build.ROOT_DIR
+DOCS_DIR = engine_build.DOCS_DIR
+REPOS_DIR = engine_build.REPOS_DIR
+DIST_DIR = engine_build.DIST_DIR
+CACHE_DIR = engine_build.CACHE_DIR
+THEMES_DIR = engine_build.THEMES_DIR
 WEB_SRC_DIR = ENGINE_DIR / "web"
 SITE_OUT_DIR = DIST_DIR / "site"
 
@@ -32,13 +34,11 @@ BRAND_NAME = "Arquitetura de IA"
 BRAND_TAGLINE = "LLMs, Orquestração, RAG, Infraestrutura, Governança e Ecossistema de Projetos"
 GITHUB_REPO_URL = "https://github.com/matheusmaiadev/guia-arquitetura-ia"
 
-MERMAID_CDN_URL = "https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"
 PDFJS_VERSION = "3.11.174"
 PDFJS_MAIN_URL = f"https://cdn.jsdelivr.net/npm/pdfjs-dist@{PDFJS_VERSION}/build/pdf.min.js"
 PDFJS_WORKER_URL = f"https://cdn.jsdelivr.net/npm/pdfjs-dist@{PDFJS_VERSION}/build/pdf.worker.min.js"
 PDFJS_CMAPS_URL = f"https://cdn.jsdelivr.net/npm/pdfjs-dist@{PDFJS_VERSION}/cmaps/"
 
-MERMAID_CACHE = CACHE_DIR / "mermaid.min.js"
 PDFJS_MAIN_CACHE = CACHE_DIR / f"pdf-{PDFJS_VERSION}.min.js"
 PDFJS_WORKER_CACHE = CACHE_DIR / f"pdf.worker-{PDFJS_VERSION}.min.js"
 
@@ -47,26 +47,6 @@ HTML_TAG_STRIP_RE = re.compile(r"<[^>]+>")
 WHITESPACE_RE = re.compile(r"\s+")
 HREF_ATTR_RE = re.compile(r'href="([^"]+)"')
 FENCE_OPEN_RE = re.compile(r"^(`{3,}|~{3,})\s*([a-zA-Z0-9_-]*)\s*$")
-
-CALLOUT_TYPES: dict[str, tuple[str, str]] = {
-    "NOTE": ("callout-note", "Nota"),
-    "INFO": ("callout-note", "Informação"),
-    "TIP": ("callout-tip", "Dica Prática"),
-    "IMPORTANT": ("callout-pronunciation", "Importante"),
-    "WARNING": ("callout-warn", "Atenção"),
-    "WARN": ("callout-warn", "Atenção"),
-    "CAUTION": ("callout-error", "Cuidado Crítico"),
-    "DANGER": ("callout-error", "Risco Crítico"),
-}
-
-MODULE_DESCRIPTIONS: dict[str, tuple[str, str]] = {
-    "01-fundamentos": ("Módulo 01 · Fundamentos de LLMs", "Base"),
-    "02-orquestracao": ("Módulo 02 · Orquestração e Agentes", "Core"),
-    "03-rag-dados": ("Módulo 03 · RAG e Dados Vetoriais", "Dados"),
-    "04-infraestrutura": ("Módulo 04 · Infraestrutura e Inferência", "Infra"),
-    "05-governanca-seguranca": ("Módulo 05 · Governança, FinOps e Segurança", "Produção"),
-    "06-adocao-empresa": ("Módulo 06 · Adoção na Empresa", "Estratégia"),
-}
 
 
 def slugify(text: str) -> str:
@@ -85,36 +65,14 @@ def doc_storage_id(web_path: str) -> str:
     return f"{safe}-{digest}"
 
 
-def parse_frontmatter(raw_text: str) -> tuple[dict[str, Any], str]:
-    if raw_text.startswith("---\n"):
-        end_idx = raw_text.find("\n---\n", 4)
-        if end_idx != -1:
-            fm_raw = raw_text[4:end_idx]
-            body = raw_text[end_idx + 5 :]
-            try:
-                parsed = yaml.safe_load(fm_raw) or {}
-                if isinstance(parsed, dict):
-                    return parsed, body
-            except Exception:
-                pass
-    return {}, raw_text
-
-
-def render_inline_markdown(text: str) -> str:
-    rendered = markdown.markdown(text, extensions=["sane_lists"])
-    rendered = re.sub(r"^<p>(.*)</p>$", r"\1", rendered.strip(), flags=re.DOTALL)
-    return rendered
-
-
-def render_markdown_fragment(text: str) -> str:
-    return markdown.markdown(text, extensions=["tables", "fenced_code", "sane_lists"])
-
-
-def load_theme_css(theme_name: str = "default") -> str:
-    theme_file = THEMES_DIR / theme_name / "theme.css"
-    if not theme_file.exists():
-        theme_file = THEMES_DIR / "default" / "theme.css"
-    return theme_file.read_text(encoding="utf-8") if theme_file.exists() else ""
+def format_bytes(size_bytes: int) -> str:
+    if size_bytes < 1024:
+        return f"{size_bytes} B"
+    kb = size_bytes / 1024
+    if kb < 1024:
+        return f"{kb:.0f} KB"
+    mb = kb / 1024
+    return f"{mb:.1f} MB"
 
 
 def map_repo_md_to_web_path(repo_rel: str) -> str:
@@ -130,16 +88,15 @@ def ensure_vendor_assets(assets_out: Path) -> dict[str, str]:
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
     vendor_paths: dict[str, str] = {
-        "mermaidJs": MERMAID_CDN_URL,
+        "mermaidJs": engine_build.MERMAID_CDN_URL,
         "pdfJs": PDFJS_MAIN_URL,
         "pdfWorkerJs": PDFJS_WORKER_URL,
         "pdfCmapsUrl": PDFJS_CMAPS_URL,
     }
 
     try:
-        if not MERMAID_CACHE.exists():
-            urllib.request.urlretrieve(MERMAID_CDN_URL, MERMAID_CACHE)
-        shutil.copy2(MERMAID_CACHE, assets_out / "mermaid.min.js")
+        mermaid_cached = engine_build.ensure_mermaid_js()
+        shutil.copy2(mermaid_cached, assets_out / "mermaid.min.js")
         vendor_paths["mermaidJs"] = "./assets/mermaid.min.js"
     except Exception as exc:
         print(f"  [aviso] Usando CDN para Mermaid ({exc})")
@@ -288,120 +245,14 @@ def rewrite_html_links(
     return HREF_ATTR_RE.sub(replacer, html_body)
 
 
-def preprocess_general_markdown(md_text: str) -> tuple[str, dict[str, str]]:
-    lines = md_text.splitlines()
-    out_chunks: list[str] = []
-    placeholders: dict[str, str] = {}
-    counter = 0
-
-    def stash_html(raw_html: str) -> str:
-        nonlocal counter
-        counter += 1
-        token = f"@@WEB_HTML_BLOCK_{counter}@@"
-        placeholders[token] = raw_html
-        return f"\n\n{token}\n\n"
-
-    in_outer_fence = False
-    outer_fence_char = ""
-    outer_fence_len = 0
-
-    i = 0
-    while i < len(lines):
-        line = lines[i]
-        stripped = line.strip()
-
-        if in_outer_fence:
-            close_match = re.match(
-                rf"^({re.escape(outer_fence_char)}{{{outer_fence_len},}})\s*$", stripped
-            )
-            if close_match:
-                in_outer_fence = False
-            out_chunks.append(line)
-            i += 1
-            continue
-
-        fence_match = FENCE_OPEN_RE.match(stripped)
-        if fence_match:
-            fence_token = fence_match.group(1)
-            lang = (fence_match.group(2) or "").lower()
-            if lang == "mermaid" and len(fence_token) == 3:
-                block_lines: list[str] = []
-                i += 1
-                while i < len(lines) and not re.match(
-                    rf"^({re.escape(fence_token[0])}{{3,}})\s*$", lines[i].strip()
-                ):
-                    block_lines.append(lines[i])
-                    i += 1
-                if i < len(lines):
-                    i += 1
-                escaped = html_lib.escape("\n".join(block_lines))
-                out_chunks.append(
-                    stash_html(f'<div class="diagram-container"><pre class="mermaid">{escaped}</pre></div>')
-                )
-                continue
-            else:
-                in_outer_fence = True
-                outer_fence_char = fence_token[0]
-                outer_fence_len = len(fence_token)
-                out_chunks.append(line)
-                i += 1
-                continue
-
-        callout_match = re.match(r"^>\s*\[!([A-Za-z0-9_-]+)\]\s*(.*)$", line)
-        if callout_match:
-            raw_kind = callout_match.group(1).upper()
-            inline_title = callout_match.group(2).strip()
-            css_class, default_title = CALLOUT_TYPES.get(
-                raw_kind, ("callout-note", raw_kind.title())
-            )
-            title = (
-                render_inline_markdown(inline_title)
-                if inline_title
-                else html_lib.escape(default_title)
-            )
-            quote_lines: list[str] = []
-            i += 1
-            while i < len(lines) and lines[i].startswith(">"):
-                quote_lines.append(re.sub(r"^>\s?", "", lines[i]))
-                i += 1
-            inner_html = render_markdown_fragment("\n".join(quote_lines))
-            callout_html = (
-                f'<aside class="callout {css_class}">'
-                f'<div class="callout-title">{title}</div>'
-                f'<div class="callout-body">{inner_html}</div>'
-                f"</aside>"
-            )
-            out_chunks.append(stash_html(callout_html))
-            continue
-
-        if (
-            re.match(r"^\s*(?:[-*+]|\d+\.)\s+", line)
-            and out_chunks
-            and out_chunks[-1].strip() != ""
-            and not re.match(r"^\s*(?:[-*+]|\d+\.)\s+", out_chunks[-1])
-        ):
-            out_chunks.append("")
-
-        out_chunks.append(line)
-        i += 1
-
-    return "\n".join(out_chunks), placeholders
-
-
 def compile_general_markdown(md_path: Path) -> tuple[str, str]:
     raw_text = md_path.read_text(encoding="utf-8")
-    meta, md_body = parse_frontmatter(raw_text)
+    meta, md_body = engine_build.parse_frontmatter(raw_text)
+    processed_md, placeholders, ext_title, _ = engine_build.preprocess_markdown(
+        md_body, strip_first_h1=False
+    )
 
-    title = str(meta.get("title") or "").strip()
-    if not title:
-        h1_match = re.search(r"^#\s+(.+)$", md_body, flags=re.MULTILINE)
-        if h1_match:
-            raw_h1 = re.sub(r"`([^`]+)`", r"\1", h1_match.group(1)).strip()
-            title = raw_h1
-        else:
-            title = md_path.stem.replace("-", " ").title()
-
-    processed_md, placeholders = preprocess_general_markdown(md_body)
+    title = str(meta.get("title") or ext_title or md_path.stem.replace("-", " ").title()).strip()
     body_html = markdown.markdown(
         processed_md,
         extensions=["tables", "fenced_code", "sane_lists"],
@@ -446,7 +297,6 @@ def load_umbrella_repositories(repo_to_web: dict[str, str]) -> list[dict[str, An
                 "tags": list(item.get("tags") or []),
             }
 
-    # Also inspect .gitmodules if any submodules were added via git submodule add
     gitmodules_path = ROOT_DIR / ".gitmodules"
     if gitmodules_path.exists():
         cp = configparser.ConfigParser()
@@ -480,7 +330,6 @@ def load_umbrella_repositories(repo_to_web: dict[str, str]) -> list[dict[str, An
         except Exception:
             pass
 
-    # Check if any local folder exists inside repos/<id>/README.md
     if REPOS_DIR.exists():
         for child in sorted(REPOS_DIR.iterdir()):
             if child.is_dir() and not child.name.startswith("."):
@@ -535,7 +384,8 @@ def sort_tree(nodes: list[dict[str, Any]], depth: int = 0) -> int:
         name_lower = item["name"].lower()
         if depth == 0 and item["kind"] == "file" and name_lower == "readme.md":
             return (-2, 0, name_lower, 0)
-        # Keep repos/ folder right after the numbered 01..06 modules
+        if depth == 0 and item["kind"] == "dir" and name_lower == "00-cadernos-pdf":
+            return (-1, 0, name_lower, 0)
         if depth == 0 and item["kind"] == "dir" and name_lower == "repos":
             return (0, 1, "99-repos", 0)
 
@@ -557,12 +407,15 @@ def sort_tree(nodes: list[dict[str, Any]], depth: int = 0) -> int:
     return total_files
 
 
-def build_study_modules_catalog(items_manifest: dict[str, dict[str, Any]]) -> list[dict[str, Any]]:
+def build_study_modules_catalog(
+    items_manifest: dict[str, dict[str, Any]],
+    module_pdf_by_slug: dict[str, str],
+) -> list[dict[str, Any]]:
     modules: list[dict[str, Any]] = []
-    for mod_slug, (mod_title, mod_badge) in MODULE_DESCRIPTIONS.items():
+    for mod_slug, mod_info in engine_build.MODULES_META.items():
         mod_docs: list[dict[str, Any]] = []
         for path, meta in sorted(items_manifest.items()):
-            if not path.startswith(f"{mod_slug}/"):
+            if not path.startswith(f"{mod_slug}/") or meta.get("type") != "md":
                 continue
             rel_in_mod = path[len(mod_slug) + 1 :]
             if rel_in_mod == "README.md":
@@ -579,15 +432,18 @@ def build_study_modules_catalog(items_manifest: dict[str, dict[str, Any]]) -> li
                     "code": code,
                     "title": meta.get("title") or rel_in_mod,
                     "path": path,
+                    "pdfPath": meta.get("pairedPdf"),
                     "relPath": rel_in_mod,
                 }
             )
         modules.append(
             {
                 "id": mod_slug,
-                "title": mod_title,
-                "badge": mod_badge,
+                "title": mod_info["title"],
+                "subtitle": mod_info["subtitle"],
+                "badge": mod_info["badge"],
                 "readmePath": f"{mod_slug}/README.md" if f"{mod_slug}/README.md" in items_manifest else None,
+                "notebookPdfPath": module_pdf_by_slug.get(mod_slug),
                 "docs": mod_docs,
             }
         )
@@ -605,8 +461,9 @@ def generate_site(theme_name: str = "default") -> Path:
     assets_dir = SITE_OUT_DIR / "assets"
     data_dir = SITE_OUT_DIR / "data"
     docs_data_dir = data_dir / "docs"
+    files_out_dir = SITE_OUT_DIR / "files"
 
-    for d in (assets_dir, data_dir, docs_data_dir):
+    for d in (assets_dir, data_dir, docs_data_dir, files_out_dir):
         d.mkdir(parents=True, exist_ok=True)
 
     (SITE_OUT_DIR / ".nojekyll").write_text("", encoding="utf-8")
@@ -617,7 +474,7 @@ def generate_site(theme_name: str = "default") -> Path:
             raise FileNotFoundError(f"Arquivo da interface web não encontrado: {src}")
         shutil.copy2(src, SITE_OUT_DIR / filename)
 
-    theme_css = load_theme_css(theme_name)
+    theme_css = engine_build.load_theme_css(theme_name)
     shadow_ready_css = re.sub(r":root\b", ":host, :root", theme_css)
     (assets_dir / "editorial-theme.css").write_text(shadow_ready_css, encoding="utf-8")
     vendor_paths = ensure_vendor_assets(assets_dir)
@@ -638,9 +495,85 @@ def generate_site(theme_name: str = "default") -> Path:
         repo_to_web[repo_rel] = web_p
         web_known_paths.add(web_p)
 
+    # Discover and copy all generated PDFs in dist/ (topicos/ and modulos/)
+    pdf_files: list[Path] = []
+    if DIST_DIR.exists():
+        for pdf in sorted(DIST_DIR.rglob("*.pdf")):
+            if SITE_OUT_DIR in pdf.parents:
+                continue
+            pdf_files.append(pdf)
+
+    logical_pdfs: dict[str, dict[str, Any]] = {}
+    topic_pdf_by_md_web: dict[str, str] = {}
+    module_pdf_by_slug: dict[str, str] = {}
+
+    for pdf_path in pdf_files:
+        rel_pdf = pdf_path.relative_to(ROOT_DIR).as_posix()
+        dest_pdf = files_out_dir / rel_pdf
+        dest_pdf.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(pdf_path, dest_pdf)
+
+        file_url = f"./files/{rel_pdf}"
+        size_bytes = pdf_path.stat().st_size
+        rel_from_dist = pdf_path.relative_to(DIST_DIR).parts
+
+        logical_pdf_path: str | None = None
+        source_md_web: str | None = None
+        base_title = pdf_path.stem.replace("-", " ").title()
+
+        if len(rel_from_dist) >= 2 and rel_from_dist[0] == "topicos":
+            candidate_repo_md = ("docs/" + "/".join(rel_from_dist[1:])).rsplit(".pdf", 1)[0] + ".md"
+            if candidate_repo_md in repo_to_web:
+                source_md_web = repo_to_web[candidate_repo_md]
+                logical_pdf_path = source_md_web.rsplit(".md", 1)[0] + ".pdf"
+                topic_pdf_by_md_web[source_md_web] = logical_pdf_path
+                base_title = f"Apostila PDF — {pdf_path.stem}"
+        elif len(rel_from_dist) == 2 and rel_from_dist[0] == "modulos":
+            mod_slug = pdf_path.stem
+            logical_pdf_path = f"00-cadernos-pdf/{mod_slug}.pdf"
+            module_pdf_by_slug[mod_slug] = logical_pdf_path
+            mod_info = engine_build.MODULES_META.get(mod_slug, {})
+            base_title = mod_info.get("title") or base_title
+
+        if not logical_pdf_path:
+            continue
+
+        repo_to_web[rel_pdf] = logical_pdf_path
+        web_known_paths.add(logical_pdf_path)
+
+        logical_pdfs[logical_pdf_path] = {
+            "path": logical_pdf_path,
+            "type": "pdf",
+            "title": base_title,
+            "fileUrl": file_url,
+            "sizeLabel": format_bytes(size_bytes),
+            "sourceMd": source_md_web,
+        }
+
     items_manifest: dict[str, dict[str, Any]] = {}
     search_entries: list[dict[str, Any]] = []
     tree_root: list[dict[str, Any]] = []
+
+    for logical_pdf_path, pdf_entry in sorted(logical_pdfs.items()):
+        items_manifest[logical_pdf_path] = pdf_entry
+        insert_into_tree(
+            tree_root,
+            logical_pdf_path,
+            {
+                "type": "pdf",
+                "title": pdf_entry["title"],
+                "sizeLabel": pdf_entry["sizeLabel"],
+            },
+        )
+        search_entries.append(
+            {
+                "path": logical_pdf_path,
+                "type": "pdf",
+                "title": pdf_entry["title"],
+                "headings": [],
+                "text": f"{pdf_entry['title']} {logical_pdf_path} apostila caderno pdf",
+            }
+        )
 
     for md_path in md_files:
         repo_rel = md_path.relative_to(ROOT_DIR).as_posix()
@@ -650,6 +583,10 @@ def generate_site(theme_name: str = "default") -> Path:
         title_str, raw_html = compile_general_markdown(md_path)
         linked_html = rewrite_html_links(raw_html, repo_rel, repo_to_web, web_known_paths)
         final_html, outline = add_heading_ids_and_extract_outline(linked_html)
+        paired_pdf = topic_pdf_by_md_web.get(web_md)
+
+        if paired_pdf and paired_pdf in items_manifest:
+            items_manifest[paired_pdf]["title"] = f"{title_str} (PDF)"
 
         doc_payload = {
             "path": web_md,
@@ -669,7 +606,7 @@ def generate_site(theme_name: str = "default") -> Path:
             "kind": "doc",
             "docId": doc_id,
             "title": title_str,
-            "pairedPdf": None,
+            "pairedPdf": paired_pdf,
         }
         insert_into_tree(
             tree_root,
@@ -678,6 +615,7 @@ def generate_site(theme_name: str = "default") -> Path:
                 "type": "md",
                 "kind": "doc",
                 "title": title_str,
+                "pairedPdf": paired_pdf,
             },
         )
         search_entries.append(
@@ -691,7 +629,7 @@ def generate_site(theme_name: str = "default") -> Path:
         )
 
     umbrella_repos = load_umbrella_repositories(repo_to_web)
-    study_modules = build_study_modules_catalog(items_manifest)
+    study_modules = build_study_modules_catalog(items_manifest, module_pdf_by_slug)
 
     sort_tree(tree_root, depth=0)
 
@@ -728,7 +666,8 @@ def generate_site(theme_name: str = "default") -> Path:
 
     print(
         f"[ok] Site '{BRAND_NAME}' gerado em {SITE_OUT_DIR.relative_to(ROOT_DIR)} "
-        f"({len(md_files)} documentos .md, {len(umbrella_repos)} módulos/repositórios em repos/)"
+        f"({len(md_files)} documentos .md, {len(logical_pdfs)} apostilas/cadernos .pdf, "
+        f"{len(umbrella_repos)} módulos em repos/)"
     )
     return SITE_OUT_DIR
 
@@ -738,7 +677,14 @@ def main() -> None:
         description="Gerador do portal estático estilo VS Code para o Guia de Arquitetura de IA"
     )
     parser.add_argument("--theme", type=str, default="default", help="Tema editorial CSS")
+    parser.add_argument(
+        "--build-pdfs",
+        action="store_true",
+        help="Compila todos os PDFs (capítulos + cadernos de módulo) antes de empacotar o site",
+    )
     args = parser.parse_args()
+    if args.build_pdfs:
+        engine_build.build_all_pdfs(theme_name=args.theme)
     generate_site(theme_name=args.theme)
 
 

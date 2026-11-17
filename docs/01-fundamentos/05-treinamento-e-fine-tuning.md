@@ -70,9 +70,9 @@ flowchart LR
     D --> E["3️⃣ ALINHAMENTO\nRLHF / DPO\najusta preferências"]
     E --> F["✅ Modelo INSTRUCT\n(o que você usa no Bedrock/OpenAI)"]
 
-    style B fill:#8b0000,stroke:#ff0000,color:#ffffff
-    style D fill:#006400,stroke:#00ff00,color:#ffffff
-    style E fill:#00008b,stroke:#0000ff,color:#ffffff
+    style B fill:#7f1d1d,stroke:#f87171,color:#ffffff
+    style D fill:#065f46,stroke:#34d399,color:#ffffff
+    style E fill:#1e3a8a,stroke:#60a5fa,color:#ffffff
 ```
 
 ### 2.1 Pré-treinamento
@@ -129,9 +129,9 @@ flowchart TD
     B -->|"Ainda não testei prompt"| P["✅ Comece por\nPROMPT ENGINEERING\n(mais barato, instantâneo)"]
     B -->|"Prompt não bastou e\ntenho MUITOS exemplos"| FT["✅ Considere FINE-TUNING"]
 
-    style RAG fill:#006400,stroke:#00ff00,color:#ffffff
-    style P fill:#00008b,stroke:#0000ff,color:#ffffff
-    style FT fill:#8b4500,stroke:#ffa500,color:#ffffff
+    style RAG fill:#065f46,stroke:#34d399,color:#ffffff
+    style P fill:#1e3a8a,stroke:#60a5fa,color:#ffffff
+    style FT fill:#78350f,stroke:#fbbf24,color:#ffffff
 ```
 
 ### Comparação lado a lado

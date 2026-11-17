@@ -201,17 +201,36 @@
     }
 
     .diagram-container {
-      padding: 14px;
-      margin: 16px 0;
+      padding: 18px 16px;
+      margin: 18px 0;
       border: 1px solid var(--color-border);
       border-radius: 6px;
       overflow-x: auto;
       text-align: center;
+      font-size: 13px !important;
+      line-height: 1.3 !important;
     }
 
     .diagram-container svg {
       max-width: 100%;
       height: auto;
+      font-size: 13px !important;
+      line-height: 1.3 !important;
+    }
+
+    .diagram-container foreignObject {
+      overflow: visible !important;
+    }
+
+    .diagram-container p,
+    .diagram-container .nodeLabel p,
+    .diagram-container .edgeLabel p,
+    .diagram-container foreignObject div,
+    .diagram-container foreignObject span {
+      margin: 0 !important;
+      padding: 0 !important;
+      font-size: 13px !important;
+      line-height: 1.3 !important;
     }
 
     @media (max-width: 720px) {
@@ -238,6 +257,7 @@
     sidebarView: "explorer",
     sidebarCollapsed: false,
     expandedDirs: new Set([
+      "00-cadernos-pdf",
       "01-fundamentos",
       "02-orquestracao",
       "02-orquestracao/07-padroes-execucao",
@@ -256,6 +276,7 @@
     splitActive: false,
     focusedPane: 0,
     paneControllers: [null, null],
+    lastPdfPages: {},
 
     paletteFiltered: [],
     paletteIndex: 0,
@@ -312,6 +333,9 @@
       if (Array.isArray(saved.expandedDirs) && saved.expandedDirs.length > 0) {
         state.expandedDirs = new Set(saved.expandedDirs);
       }
+      if (saved.lastPdfPages && typeof saved.lastPdfPages === "object") {
+        state.lastPdfPages = saved.lastPdfPages;
+      }
     } catch (_) {}
   }
 
@@ -324,6 +348,7 @@
           sheetMode: state.sheetMode,
           readerScale: state.readerScale,
           expandedDirs: Array.from(state.expandedDirs),
+          lastPdfPages: state.lastPdfPages,
         })
       );
     } catch (_) {}
@@ -358,6 +383,9 @@
   }
 
   function fileBadgeHtml(type) {
+    if (type === "pdf") {
+      return '<span class="file-badge-icon file-badge-pdf" aria-hidden="true">PDF</span>';
+    }
     if (type === "repo") {
       return '<span class="file-badge-icon" style="color:#a78bfa" aria-hidden="true">GIT</span>';
     }
@@ -469,6 +497,9 @@
               `title="${escapeHtml(node.title || node.path)}" role="treeitem">` +
               `${fileBadgeHtml(node.type)}` +
               `<span class="tree-label">${escapeHtml(node.name)}</span>` +
+              (node.pairedPdf
+                ? `<button class="tree-quick-pdf" data-open-pdf="${escapeHtml(node.pairedPdf)}" title="Abrir versão PDF">PDF</button>`
+                : "") +
               `</div>`
           );
         }
@@ -555,7 +586,7 @@
       }
     }
 
-    // 2. Study Modules (01..06)
+    // 2. Study Modules (01..06) + Module PDF Notebooks
     if (cat.modules && cat.modules.length > 0) {
       chunks.push(`<div class="catalog-block-title">Trilha de Arquitetura de IA (Módulos 01–06)</div>`);
       for (const mod of cat.modules) {
@@ -565,14 +596,23 @@
               `<div class="catalog-unit-row is-available" data-doc-open="${escapeHtml(doc.path)}">` +
               `<span class="catalog-unit-code">${escapeHtml(doc.code)}</span>` +
               `<span class="catalog-unit-name">${escapeHtml(doc.title)}</span>` +
+              (doc.pdfPath
+                ? `<button class="tree-quick-pdf" style="opacity:1" data-open-pdf="${escapeHtml(doc.pdfPath)}" title="Abrir PDF do capítulo">PDF</button>`
+                : "") +
               `</div>`
           )
           .join("");
 
+        const notebookBtn = mod.notebookPdfPath
+          ? `<div style="padding:6px 9px;border-top:1px solid var(--vscode-border-subtle);display:flex;justify-content:flex-end;">` +
+            `<button class="mini-action-btn" data-doc-open="${escapeHtml(mod.notebookPdfPath)}">Abrir Caderno Completo do Módulo (PDF)</button>` +
+            `</div>`
+          : "";
+
         chunks.push(
           `<details class="catalog-area-details" open>` +
             `<summary>${escapeHtml(mod.title)}</summary>` +
-            `${rows}` +
+            `${notebookBtn}${rows}` +
             `</details>`
         );
       }
@@ -791,8 +831,12 @@
       return;
     }
     const active0 = state.panes[0].activePath || "README.md";
+    const item0 = state.manifest.items[active0];
+    const pairedPdf = item0?.pairedPdf || null;
+    const pairedMd = item0?.sourceMd || null;
+    const targetForRight = pairedPdf || pairedMd || active0;
     enableSplitPane();
-    openDocument(active0, { paneIdx: 1, pinned: true });
+    openDocument(targetForRight, { paneIdx: 1, pinned: true });
   }
 
   function renderPaneTabs(paneIdx) {
@@ -801,7 +845,7 @@
     strip.innerHTML = pane.tabs
       .map((t) => {
         const item = state.manifest.items[t.path] || {};
-        const name = t.path === "README.md" ? "README.md" : t.path.split("/").slice(-2).join("/");
+        const name = t.path.split("/").pop();
         const isActive = t.path === pane.activePath;
         return (
           `<div class="tab-item ${isActive ? "is-active" : ""} ${!t.pinned ? "is-preview" : ""}" ` +
@@ -828,30 +872,52 @@
       return;
     }
 
+    const item = state.manifest.items[pane.activePath];
+    if (!item) {
+      container.innerHTML = "";
+      return;
+    }
+
     const buttons = [];
 
-    if (!isMobileViewport() && !state.splitActive) {
+    if (item.type === "md") {
+      const pairedPdf = item.pairedPdf;
+      if (pairedPdf) {
+        buttons.push(
+          `<button class="toolbar-pill-btn is-accent" data-action="open-paired-pdf" data-target="${escapeHtml(pairedPdf)}" data-pane="${paneIdx}" title="Abrir apostila PDF deste capítulo">` +
+            `<span>PDF</span>` +
+            `</button>`
+        );
+        if (!isMobileViewport()) {
+          buttons.push(
+            `<button class="toolbar-pill-btn" data-action="split-paired-pdf" data-target="${escapeHtml(pairedPdf)}" title="Ler .md e .pdf lado a lado">` +
+              `<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path fill="currentColor" d="M2 2h12a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm5.5 1H2v10h5.5V3zm1 0v10H14V3H8.5z"/></svg>` +
+              `<span>Lado a Lado</span>` +
+              `</button>`
+          );
+        }
+      }
+
+      if (state.workbenchTheme === "dark") {
+        const isPaper = state.sheetMode === "paper";
+        buttons.push(
+          `<button class="toolbar-pill-btn" data-action="toggle-sheet-mode" title="Alternar aparência da folha (Escura vs Papel Editorial)">` +
+            `<span>${isPaper ? "Folha: Papel" : "Folha: Escura"}</span>` +
+            `</button>`
+        );
+      }
+
       buttons.push(
-        `<button class="toolbar-pill-btn" data-action="split-current" title="Dividir leitura lado a lado">` +
-          `<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path fill="currentColor" d="M2 2h12a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zm5.5 1H2v10h5.5V3zm1 0v10H14V3H8.5z"/></svg>` +
-          `<span>Lado a Lado</span>` +
+        `<button class="toolbar-pill-btn" data-action="font-dec" title="Diminuir tamanho do texto">A−</button>`,
+        `<button class="toolbar-pill-btn" data-action="font-inc" title="Aumentar tamanho do texto">A+</button>`
+      );
+    } else if (item.type === "pdf" && item.sourceMd) {
+      buttons.push(
+        `<button class="toolbar-pill-btn" data-action="open-paired-md" data-target="${escapeHtml(item.sourceMd)}" data-pane="${paneIdx}" title="Abrir versão em documento Markdown (.md)">` +
+          `<span>M↓ Abrir .md</span>` +
           `</button>`
       );
     }
-
-    if (state.workbenchTheme === "dark") {
-      const isPaper = state.sheetMode === "paper";
-      buttons.push(
-        `<button class="toolbar-pill-btn" data-action="toggle-sheet-mode" title="Alternar aparência da folha (Escura vs Papel Editorial)">` +
-          `<span>${isPaper ? "Folha: Papel" : "Folha: Escura"}</span>` +
-          `</button>`
-      );
-    }
-
-    buttons.push(
-      `<button class="toolbar-pill-btn" data-action="font-dec" title="Diminuir tamanho do texto">A−</button>`,
-      `<button class="toolbar-pill-btn" data-action="font-inc" title="Aumentar tamanho do texto">A+</button>`
-    );
 
     if (paneIdx === 1 && state.splitActive) {
       buttons.push(
@@ -900,11 +966,11 @@
           <circle cx="12" cy="12" r="1.75" fill="currentColor"/>
         </svg>
         <h2 class="watermark-title">Guia de Arquitetura de IA</h2>
-        <p class="watermark-sub">Trilha técnica de LLMs, Orquestração, RAG, Infraestrutura e Governança + Ecossistema Guarda-Chuva em <code>repos/</code>.</p>
+        <p class="watermark-sub">Trilha técnica de LLMs, Orquestração, RAG, Infraestrutura e Governança + Apostilas <code>.pdf</code> e Ecossistema Guarda-Chuva em <code>repos/</code>.</p>
         <div class="watermark-shortcuts">
-          <div class="watermark-shortcut-row"><span>Ir rapidamente para capítulo</span><kbd>⌘P / Ctrl+P</kbd></div>
+          <div class="watermark-shortcut-row"><span>Ir rapidamente para capítulo ou PDF</span><kbd>⌘P / Ctrl+P</kbd></div>
           <div class="watermark-shortcut-row"><span>Pesquisar em todo o material</span><kbd>⌘⇧F / Ctrl+Shift+F</kbd></div>
-          <div class="watermark-shortcut-row"><span>Dividir leitura lado a lado</span><kbd>⌘\\ / Ctrl+\\</kbd></div>
+          <div class="watermark-shortcut-row"><span>Dividir leitura (.md + .pdf) lado a lado</span><kbd>⌘\\ / Ctrl+\\</kbd></div>
         </div>
       </div>
     `;
@@ -932,10 +998,14 @@
     const item = state.manifest.items[activePath];
     if (!item) return;
 
-    await mountMarkdownReader(paneIdx, viewport, item, {
-      anchor: opts.anchor || "",
-      restoreScrollTop: prevScrollTop,
-    });
+    if (item.type === "pdf") {
+      await mountPdfReader(paneIdx, viewport, item);
+    } else {
+      await mountMarkdownReader(paneIdx, viewport, item, {
+        anchor: opts.anchor || "",
+        restoreScrollTop: prevScrollTop,
+      });
+    }
   }
 
   async function renderMermaidDiagramsInShadow(shadowRoot, useDarkDiagram) {
@@ -949,7 +1019,7 @@
       window.mermaid.initialize({
         startOnLoad: false,
         theme: "base",
-        flowchart: { htmlLabels: true, curve: "basis", padding: 10, nodeSpacing: 26, rankSpacing: 32 },
+        flowchart: { htmlLabels: true, curve: "basis", padding: 14, nodeSpacing: 28, rankSpacing: 34 },
         themeVariables: useDarkDiagram
           ? {
               fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
@@ -976,7 +1046,8 @@
       });
 
       for (const pre of preNodes) {
-        const graphCode = pre.dataset.rawGraph || pre.textContent.trim();
+        const rawText = pre.dataset.rawGraph || pre.textContent.trim();
+        const graphCode = rawText.replace(/\\n/g, "<br/>");
         pre.dataset.rawGraph = graphCode;
         state.mermaidCounter += 1;
         const svgId = `mmd-svg-${state.mermaidCounter}`;
@@ -1136,6 +1207,251 @@
     updateStatusBar();
   }
 
+  async function mountPdfReader(paneIdx, viewport, item) {
+    const activePdfUrl = item.fileUrl || "";
+    const activePdfSize = item.sizeLabel || "";
+    viewport.innerHTML = `
+      <div class="pdf-viewer-shell">
+        <div class="pdf-toolbar">
+          <div class="pdf-toolbar-group">
+            <button class="icon-btn-sm" data-pdf-act="prev" title="Página anterior">◀</button>
+            <div class="pdf-page-indicator">
+              <input type="number" min="1" value="1" class="pdf-page-input" aria-label="Número da página" />
+              <span>/ <span class="pdf-total-pages">–</span></span>
+            </div>
+            <button class="icon-btn-sm" data-pdf-act="next" title="Próxima página">▶</button>
+          </div>
+          <div class="pdf-toolbar-group">
+            <button class="icon-btn-sm" data-pdf-act="zoom-out" title="Reduzir zoom">−</button>
+            <span class="pdf-zoom-label">Largura</span>
+            <button class="icon-btn-sm" data-pdf-act="zoom-in" title="Ampliar zoom">+</button>
+            <button class="toolbar-pill-btn" data-pdf-act="fit-width" title="Ajustar à largura do painel">Ajustar</button>
+          </div>
+          <div class="pdf-toolbar-group">
+            <a class="toolbar-pill-btn" href="${escapeHtml(activePdfUrl)}" download title="Baixar apostila PDF">Baixar</a>
+            <a class="toolbar-pill-btn" href="${escapeHtml(activePdfUrl)}" target="_blank" rel="noopener noreferrer" title="Abrir PDF em nova guia">↗</a>
+          </div>
+        </div>
+        <div class="pdf-pages-stage">
+          <div class="pdf-loading-msg">Carregando apostila PDF (${escapeHtml(activePdfSize)})...</div>
+        </div>
+      </div>
+    `;
+
+    const shell = viewport.querySelector(".pdf-viewer-shell");
+    const stage = viewport.querySelector(".pdf-pages-stage");
+    const pageInput = viewport.querySelector(".pdf-page-input");
+    const totalSpan = viewport.querySelector(".pdf-total-pages");
+    const zoomLabel = viewport.querySelector(".pdf-zoom-label");
+
+    let destroyed = false;
+    let pdfDoc = null;
+    let observer = null;
+    let resizeObserver = null;
+    let zoomMode = "fit-width";
+    let computedScale = 1.2;
+    let currentPage = state.lastPdfPages[item.path] || 1;
+    let pageSlots = [];
+    let renderedAtScale = new Map();
+
+    try {
+      await loadScriptOnce(state.manifest.vendor.pdfJs);
+      if (!window.pdfjsLib) throw new Error("PDF.js indisponível");
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = state.manifest.vendor.pdfWorkerJs;
+
+      const loadingTask = window.pdfjsLib.getDocument({
+        url: activePdfUrl,
+        cMapUrl: state.manifest.vendor.pdfCmapsUrl,
+        cMapPacked: true,
+      });
+      pdfDoc = await loadingTask.promise;
+    } catch (err) {
+      if (destroyed) return;
+      stage.innerHTML = `<iframe src="${escapeHtml(activePdfUrl)}" style="width:100%;height:100%;border:none;border-radius:4px;" title="${escapeHtml(item.title)}"></iframe>`;
+      return;
+    }
+
+    if (destroyed || state.panes[paneIdx].activePath !== item.path) {
+      pdfDoc.destroy();
+      return;
+    }
+
+    const numPages = pdfDoc.numPages;
+    currentPage = Math.min(Math.max(1, currentPage), numPages);
+    totalSpan.textContent = String(numPages);
+    pageInput.max = String(numPages);
+    pageInput.value = String(currentPage);
+
+    const firstPage = await pdfDoc.getPage(1);
+    const baseViewport = firstPage.getViewport({ scale: 1 });
+
+    function calculateScale() {
+      if (zoomMode === "fit-width") {
+        const availWidth = Math.max(260, stage.clientWidth - 44);
+        const targetWidth = Math.min(availWidth, 920);
+        computedScale = targetWidth / baseViewport.width;
+        zoomLabel.textContent = `${Math.round(computedScale * 100)}%`;
+      } else {
+        computedScale = zoomMode;
+        zoomLabel.textContent = `${Math.round(computedScale * 100)}%`;
+      }
+      if (paneIdx === state.focusedPane) {
+        updateStatusBar();
+      }
+    }
+
+    async function renderSinglePage(pageNum, slotEl) {
+      if (destroyed) return;
+      const targetScaleKey = computedScale.toFixed(3);
+      if (renderedAtScale.get(pageNum) === targetScaleKey) return;
+      renderedAtScale.set(pageNum, targetScaleKey);
+
+      try {
+        const page = await pdfDoc.getPage(pageNum);
+        if (destroyed) return;
+        const vp = page.getViewport({ scale: computedScale });
+        const dpr = Math.min(window.devicePixelRatio || 1, 2.25);
+
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.floor(vp.width * dpr);
+        canvas.height = Math.floor(vp.height * dpr);
+        canvas.style.width = `${Math.floor(vp.width)}px`;
+        canvas.style.height = `${Math.floor(vp.height)}px`;
+
+        const ctx = canvas.getContext("2d", { alpha: false });
+        ctx.scale(dpr, dpr);
+
+        await page.render({ canvasContext: ctx, viewport: vp }).promise;
+        if (destroyed) return;
+        slotEl.innerHTML = "";
+        slotEl.appendChild(canvas);
+      } catch (_) {}
+    }
+
+    function rebuildStageLayout(preservePageNum) {
+      calculateScale();
+      renderedAtScale.clear();
+      if (observer) observer.disconnect();
+
+      const slotW = Math.floor(baseViewport.width * computedScale);
+      const slotH = Math.floor(baseViewport.height * computedScale);
+
+      stage.innerHTML = "";
+      pageSlots = [];
+
+      observer = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) {
+              const pNum = Number(entry.target.dataset.pageNum);
+              renderSinglePage(pNum, entry.target);
+            }
+          }
+        },
+        { root: stage, rootMargin: "700px 0px" }
+      );
+
+      for (let p = 1; p <= numPages; p++) {
+        const slot = document.createElement("div");
+        slot.className = "pdf-page-slot";
+        slot.dataset.pageNum = String(p);
+        slot.style.width = `${slotW}px`;
+        slot.style.height = `${slotH}px`;
+        stage.appendChild(slot);
+        pageSlots.push(slot);
+        observer.observe(slot);
+      }
+
+      if (preservePageNum > 1 && pageSlots[preservePageNum - 1]) {
+        pageSlots[preservePageNum - 1].scrollIntoView({ block: "start" });
+      }
+    }
+
+    function goToPage(pNum) {
+      const clamped = Math.min(Math.max(1, pNum), numPages);
+      currentPage = clamped;
+      pageInput.value = String(clamped);
+      const slot = pageSlots[clamped - 1];
+      if (slot) {
+        slot.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }
+
+    stage.addEventListener("scroll", () => {
+      const mid = stage.scrollTop + stage.clientHeight * 0.32;
+      for (let i = 0; i < pageSlots.length; i++) {
+        const s = pageSlots[i];
+        if (s.offsetTop + s.offsetHeight >= mid) {
+          if (currentPage !== i + 1) {
+            currentPage = i + 1;
+            pageInput.value = String(currentPage);
+            state.lastPdfPages[item.path] = currentPage;
+            persistState();
+            if (paneIdx === state.focusedPane) updateStatusBar();
+          }
+          break;
+        }
+      }
+    });
+
+    shell.querySelector(".pdf-toolbar").addEventListener("click", (ev) => {
+      const btn = ev.target.closest("[data-pdf-act]");
+      if (!btn) return;
+      const act = btn.dataset.pdfAct;
+      if (act === "prev") goToPage(currentPage - 1);
+      else if (act === "next") goToPage(currentPage + 1);
+      else if (act === "zoom-in") {
+        zoomMode = Math.min(2.4, Math.round((computedScale + 0.18) * 100) / 100);
+        rebuildStageLayout(currentPage);
+      } else if (act === "zoom-out") {
+        zoomMode = Math.max(0.55, Math.round((computedScale - 0.18) * 100) / 100);
+        rebuildStageLayout(currentPage);
+      } else if (act === "fit-width") {
+        zoomMode = "fit-width";
+        rebuildStageLayout(currentPage);
+      }
+    });
+
+    pageInput.addEventListener("change", () => {
+      const val = parseInt(pageInput.value, 10);
+      if (!Number.isNaN(val)) goToPage(val);
+    });
+
+    let lastStageWidth = stage.clientWidth;
+    let resizeTimer = null;
+    resizeObserver = new ResizeObserver(() => {
+      if (zoomMode !== "fit-width") return;
+      if (Math.abs(stage.clientWidth - lastStageWidth) < 12) return;
+      lastStageWidth = stage.clientWidth;
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        if (!destroyed) rebuildStageLayout(currentPage);
+      }, 140);
+    });
+
+    rebuildStageLayout(currentPage);
+    resizeObserver.observe(stage);
+
+    if (paneIdx === state.focusedPane) {
+      dom.outlineList.innerHTML =
+        `<div class="sidebar-empty-hint">Apostila PDF com <strong>${numPages}</strong> página(s). Use os controles superiores para navegar.</div>`;
+    }
+
+    state.paneControllers[paneIdx] = {
+      type: "pdf",
+      getPageMeta: () => ({ currentPage, numPages, zoomPct: Math.round(computedScale * 100) }),
+      refreshAppearance: () => {},
+      destroy: () => {
+        destroyed = true;
+        if (observer) observer.disconnect();
+        if (resizeObserver) resizeObserver.disconnect();
+        if (pdfDoc) pdfDoc.destroy();
+      },
+    };
+
+    updateStatusBar();
+  }
+
   function refreshAllPanesAppearance() {
     [0, 1].forEach((idx) => {
       renderPaneActions(idx);
@@ -1151,6 +1467,10 @@
     const ctrl = state.paneControllers[state.focusedPane];
     if (ctrl && ctrl.type === "md") {
       renderOutline(ctrl.outline, state.focusedPane);
+    } else if (ctrl && ctrl.type === "pdf") {
+      const meta = ctrl.getPageMeta();
+      dom.outlineList.innerHTML =
+        `<div class="sidebar-empty-hint">Apostila PDF (${meta.numPages} páginas).</div>`;
     } else {
       dom.outlineList.innerHTML =
         '<div class="sidebar-empty-hint">Abra um documento .md para navegar pelas seções.</div>';
@@ -1164,24 +1484,34 @@
       dom.statusDocMeta.textContent = "Nenhum capítulo aberto";
       dom.statusZoomMeta.textContent = `${Math.round(state.readerScale * 100)}%`;
       dom.commandCenterLabel.textContent =
-        "Arquitetura de IA — Buscar capítulo .md ou submódulo em repos/";
+        "Arquitetura de IA — Buscar capítulo .md, apostila .pdf ou submódulo em repos/";
       return;
     }
 
+    const item = state.manifest.items[activePath];
     const fileName = activePath.split("/").pop();
     dom.commandCenterLabel.textContent = `${fileName} — Arquitetura de IA`;
 
     const ctrl = state.paneControllers[state.focusedPane];
-    const secCount = ctrl?.outline ? ctrl.outline.length : 0;
-    dom.statusDocMeta.textContent = `Markdown · ${secCount} seções`;
-    dom.statusZoomMeta.textContent = `${Math.round(state.readerScale * 100)}%`;
+    if (item.type === "pdf") {
+      const pMeta = ctrl?.getPageMeta ? ctrl.getPageMeta() : null;
+      const pdfSize = item.sizeLabel || "";
+      dom.statusDocMeta.textContent = pMeta
+        ? `PDF · Pág. ${pMeta.currentPage}/${pMeta.numPages} · ${pdfSize}`
+        : `PDF · ${pdfSize}`;
+      dom.statusZoomMeta.textContent = pMeta ? `${pMeta.zoomPct}%` : "100%";
+    } else {
+      const secCount = ctrl?.outline ? ctrl.outline.length : 0;
+      dom.statusDocMeta.textContent = `Markdown · ${secCount} seções`;
+      dom.statusZoomMeta.textContent = `${Math.round(state.readerScale * 100)}%`;
+    }
   }
 
   function openCommandPalette() {
     dom.paletteBackdrop.hidden = false;
     dom.paletteInput.value = "";
     dom.paletteInput.placeholder =
-      "Digite o nome ou título do capítulo .md ou submódulo em repos/...";
+      "Digite o nome ou título do capítulo .md, apostila .pdf ou submódulo em repos/...";
     filterPaletteItems("");
     setTimeout(() => dom.paletteInput.focus(), 15);
   }
@@ -1359,6 +1689,13 @@
     });
 
     dom.fileTree.addEventListener("click", (ev) => {
+      const quickPdf = ev.target.closest("[data-open-pdf]");
+      if (quickPdf) {
+        ev.stopPropagation();
+        openDocument(quickPdf.dataset.openPdf, { pinned: true });
+        return;
+      }
+
       const dirRow = ev.target.closest("[data-dir-path]");
       if (dirRow) {
         const dPath = dirRow.dataset.dirPath;
@@ -1410,6 +1747,12 @@
     });
 
     dom.catalogContainer.addEventListener("click", (ev) => {
+      const pdfBtn = ev.target.closest("[data-open-pdf]");
+      if (pdfBtn) {
+        ev.stopPropagation();
+        openDocument(pdfBtn.dataset.openPdf, { pinned: true });
+        return;
+      }
       const docEl = ev.target.closest("[data-doc-open]");
       if (docEl) {
         openDocument(docEl.dataset.docOpen, { pinned: true });
@@ -1453,8 +1796,11 @@
         const btn = ev.target.closest("[data-action]");
         if (!btn) return;
         const act = btn.dataset.action;
-        if (act === "split-current") {
-          toggleSplitReading();
+        if (act === "open-paired-pdf" || act === "open-paired-md") {
+          openDocument(btn.dataset.target, { paneIdx, pinned: true });
+        } else if (act === "split-paired-pdf") {
+          enableSplitPane();
+          openDocument(btn.dataset.target, { paneIdx: 1, pinned: true });
         } else if (act === "toggle-sheet-mode") {
           state.sheetMode = state.sheetMode === "paper" ? "auto" : "paper";
           persistState();

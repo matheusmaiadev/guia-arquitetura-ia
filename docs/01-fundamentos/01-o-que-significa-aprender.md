@@ -36,8 +36,8 @@ flowchart TD
     F --> G["7️⃣ Repete com o próximo trecho"]
     G --> A
 
-    style D fill:#8b0000,stroke:#ff0000,color:#ffffff
-    style F fill:#006400,stroke:#00ff00,color:#ffffff
+    style D fill:#7f1d1d,stroke:#f87171,color:#ffffff
+    style F fill:#065f46,stroke:#34d399,color:#ffffff
 ```
 
 ### Em números concretos

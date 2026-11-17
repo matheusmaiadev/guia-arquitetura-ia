@@ -29,10 +29,10 @@ flowchart TD
     TRES --> D2["🏋️ Treinamento futuro\nSeus dados podem treinar\na próxima versão"]
     TRES --> D3["🗄️ Retenção\nArmazenados por dias,\nmeses ou indefinidamente"]
 
-    style YOU fill:#8b0000,stroke:#ff0000,color:#ffffff
-    style LOG fill:#8b6914,stroke:#ffa500,color:#ffffff
-    style D1 fill:#3d0000,stroke:#ff0000,color:#e0e0e0
-    style D2 fill:#3d0000,stroke:#ff0000,color:#e0e0e0
+    style YOU fill:#7f1d1d,stroke:#f87171,color:#ffffff
+    style LOG fill:#78350f,stroke:#fbbf24,color:#ffffff
+    style D1 fill:#450a0a,stroke:#f87171,color:#f1f5f9
+    style D2 fill:#450a0a,stroke:#f87171,color:#f1f5f9
 ```
 
 > [!CAUTION]
@@ -121,8 +121,8 @@ flowchart TD
 
     DEL --> OPT["⚙️ Desative o uso\nde dados para treino\nnas configurações"]
 
-    style LEAK fill:#8b0000,stroke:#ff0000,color:#ffffff
-    style S4 fill:#8b0000,stroke:#ff6600,color:#ffffff
+    style LEAK fill:#7f1d1d,stroke:#f87171,color:#ffffff
+    style S4 fill:#78350f,stroke:#fbbf24,color:#ffffff
 ```
 
 ### Passo a passo imediato:
@@ -167,8 +167,8 @@ flowchart LR
         F["Funcionários colando\ncódigo proprietário\nno ChatGPT"]
     end
 
-    style Seguro fill:#003d00,stroke:#00ff00,color:#e0e0e0
-    style Inseguro fill:#3d0000,stroke:#ff0000,color:#e0e0e0
+    style Seguro fill:#064e3b,stroke:#34d399,color:#f1f5f9
+    style Inseguro fill:#450a0a,stroke:#f87171,color:#f1f5f9
 ```
 
 > [!TIP]

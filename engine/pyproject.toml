@@ -1,9 +1,11 @@
 [project]
 name = "guia-arquitetura-ia-engine"
 version = "0.1.0"
-description = "Motor gerador do portal estático de leitura estilo VS Code para o Guia de Arquitetura de IA"
+description = "Motor gerador de apostilas PDF A4 e portal estático estilo VS Code para o Guia de Arquitetura de IA"
 requires-python = ">=3.11"
 dependencies = [
+    "jinja2>=3.1.4",
     "markdown>=3.7",
+    "playwright>=1.49.0",
     "pyyaml>=6.0.2",
 ]

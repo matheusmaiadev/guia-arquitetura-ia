@@ -1010,10 +1010,11 @@ tbody tr:nth-child(even) {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
-  padding: 12px 10px;
-  margin: 12px 0 15px 0;
+  padding: 16px 14px;
+  margin: 14px 0 18px 0;
   text-align: center;
   break-inside: avoid;
+  overflow-x: auto;
 }
 
 .diagram-container pre.mermaid {
@@ -1028,9 +1029,24 @@ tbody tr:nth-child(even) {
 
 .diagram-container svg {
   max-width: 100% !important;
-  max-height: 290px !important;
-  width: 100% !important;
   height: auto !important;
+  font-size: 13px !important;
+  line-height: 1.3 !important;
+}
+
+.diagram-container foreignObject {
+  overflow: visible !important;
+}
+
+.diagram-container p,
+.diagram-container .nodeLabel p,
+.diagram-container .edgeLabel p,
+.diagram-container foreignObject div,
+.diagram-container foreignObject span {
+  margin: 0 !important;
+  padding: 0 !important;
+  line-height: 1.3 !important;
+  font-size: 13px !important;
 }
 
 .visual-chart,

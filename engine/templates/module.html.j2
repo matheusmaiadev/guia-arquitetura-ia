@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ module.title }}</title>
+  <style>
+{{ theme_css | safe }}
+  </style>
+</head>
+<body class="doc-topic">
+  <section class="roadmap-cover">
+    <div class="unit-topbar">
+      <div class="unit-topbar-left">
+        <span class="unit-lang">CADERNO DE ESTUDO COMPLETO · ARQUITETURA DE IA</span>
+      </div>
+      <div class="unit-topbar-right">
+        <span class="unit-meta-context">{{ module.badge }}</span>
+      </div>
+    </div>
+    <h1 class="roadmap-title">{{ module.title }}</h1>
+    <p class="roadmap-subtitle">{{ module.subtitle }}</p>
+
+    <div class="roadmap-toc">
+      <h2>Sumário de Capítulos ({{ chapters | length }} capítulos)</h2>
+      <ol class="toc-list">
+        {% for ch in chapters %}
+        <li>
+          <div>
+            <strong>Cap. {{ ch.meta.code }} — {{ ch.meta.title }}</strong>
+          </div>
+          {% if ch.meta.summary %}
+          <p class="toc-chapter-summary">{{ ch.meta.summary }}</p>
+          {% endif %}
+        </li>
+        {% endfor %}
+      </ol>
+    </div>
+  </section>
+
+  {% for ch in chapters %}
+  <div class="page-break"></div>
+  <article class="chapter-block">
+    <header class="unit-header">
+      <div class="unit-topbar">
+        <div class="unit-topbar-left">
+          <span class="unit-lang">{{ module.title }}</span>
+        </div>
+        <div class="unit-topbar-right">
+          <span class="unit-meta-context">Cap. {{ ch.meta.code }}</span>
+        </div>
+      </div>
+      <div class="unit-title-row">
+        <div class="unit-number-box">Cap. {{ ch.meta.code }}</div>
+        <div class="unit-title-block">
+          <h1 class="unit-title">{{ ch.meta.title }}</h1>
+          {% if ch.meta.summary %}
+          <p class="unit-summary">{{ ch.meta.summary }}</p>
+          {% endif %}
+        </div>
+      </div>
+    </header>
+    <main class="doc-content">
+      {{ ch.body_html | safe }}
+    </main>
+  </article>
+  {% endfor %}
+</body>
+</html>

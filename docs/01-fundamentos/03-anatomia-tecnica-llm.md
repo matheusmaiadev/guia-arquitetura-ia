@@ -289,11 +289,11 @@ flowchart LR
 
     FP32 --> FP16 --> INT8 --> Q4 --> Q2
 
-    style FP32 fill:#006400,stroke:#00ff00,color:#white
-    style FP16 fill:#2d6a1e,stroke:#00cc00,color:#white
-    style INT8 fill:#6a6a00,stroke:#cccc00,color:#white
-    style Q4 fill:#8b6914,stroke:#ffa500,color:#white
-    style Q2 fill:#8b0000,stroke:#ff0000,color:#white
+    style FP32 fill:#065f46,stroke:#34d399,color:#ffffff
+    style FP16 fill:#115e59,stroke:#2dd4bf,color:#ffffff
+    style INT8 fill:#1e3a8a,stroke:#60a5fa,color:#ffffff
+    style Q4 fill:#78350f,stroke:#fbbf24,color:#ffffff
+    style Q2 fill:#7f1d1d,stroke:#f87171,color:#ffffff
 ```
 
 ### Impacto prático:

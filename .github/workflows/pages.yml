@@ -33,8 +33,11 @@ jobs:
       - name: Install engine Python dependencies
         run: make setup
 
-      - name: Build VS Code Web Reader site
-        run: make site
+      - name: Install Chromium for PDF generation
+        run: cd engine && uv run --python 3.12 playwright install --with-deps chromium
+
+      - name: Build all PDFs and VS Code Web Reader site
+        run: make site-full
 
       - name: Configure GitHub Pages
         if: github.event.repository.private == false || github.event_name == 'workflow_dispatch'
