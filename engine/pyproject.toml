@@ -1,0 +1,9 @@
+[project]
+name = "guia-arquitetura-ia-engine"
+version = "0.1.0"
+description = "Motor gerador do portal estático de leitura estilo VS Code para o Guia de Arquitetura de IA"
+requires-python = ">=3.11"
+dependencies = [
+    "markdown>=3.7",
+    "pyyaml>=6.0.2",
+]

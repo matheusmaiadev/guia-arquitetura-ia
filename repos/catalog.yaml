@@ -1,0 +1,40 @@
+# Catálogo de repositórios e submódulos acoplados a este projeto guarda-chuva.
+# Quando um repositório também estiver clonado em repos/<id>/ (via git submodule),
+# o gerador web vincula automaticamente o README local + o link externo do GitHub.
+
+repositories:
+  - id: orquestrador-lambda-bedrock
+    name: Orquestrador de IA Serverless (Lambda + Bedrock)
+    category: "Módulo 02 · Orquestração"
+    status: planned # planned | submodule | linked
+    github_url: "https://github.com/matheusmaiadev"
+    related_doc: "docs/02-orquestracao/03-orquestradores-ia-lambda.md"
+    description: "Implementação prática de orquestrador ReAct com AWS Lambda, Bedrock Converse API, DynamoDB e Step Functions."
+    tags: ["aws-lambda", "bedrock", "agents", "python"]
+
+  - id: rag-pgvector-hybrid
+    name: Pipeline RAG Híbrido (pgvector + Reranking)
+    category: "Módulo 03 · RAG & Dados"
+    status: planned
+    github_url: "https://github.com/matheusmaiadev"
+    related_doc: "docs/03-rag-dados/01-bancos-vetoriais-e-documentos.md"
+    description: "Ingestão de documentos, chunking semântico, busca híbrida (BM25 + HNSW no PostgreSQL/pgvector) e reranking."
+    tags: ["rag", "pgvector", "embeddings", "hybrid-search"]
+
+  - id: serverless-gpu-workers
+    name: Workers de Inferência em Serverless GPU
+    category: "Módulo 04 · Infraestrutura"
+    status: planned
+    github_url: "https://github.com/matheusmaiadev"
+    related_doc: "docs/04-infraestrutura/03-serverless-gpu.md"
+    description: "Containers e deploys vLLM/Ollama sob demanda com scale-to-zero em plataformas de Serverless GPU."
+    tags: ["vllm", "serverless-gpu", "inference", "docker"]
+
+  - id: ai-gateway-finops
+    name: AI Gateway, FinOps de Tokens e Observabilidade
+    category: "Módulo 05 · Governança & FinOps"
+    status: planned
+    github_url: "https://github.com/matheusmaiadev"
+    related_doc: "docs/05-governanca-seguranca/04-posicionamento-controle-tokens.md"
+    description: "Camada de gateway multi-tenant com rate limiting por token, roteamento por custo, guardrails e telemetria OpenTelemetry."
+    tags: ["ai-gateway", "finops", "litellm", "opentelemetry"]

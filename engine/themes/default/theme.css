@@ -1,0 +1,1372 @@
+:root {
+  --font-heading: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+
+  --color-bg: #ffffff;
+  --color-ink: #0f172a;
+  --color-body: #1e293b;
+  --color-muted: #475569;
+  --color-subtle: #64748b;
+
+  --color-primary: #1e40af;
+  --color-primary-dark: #1e3a8a;
+  --color-primary-soft: #eff6ff;
+  --color-primary-border: #bfdbfe;
+
+  --color-secondary: #334155;
+  --color-secondary-soft: #f1f5f9;
+
+  --color-border: #cbd5e1;
+  --color-border-light: #e2e8f0;
+  --color-surface: #f8fafc;
+  --color-surface-alt: #f1f5f9;
+
+  --color-error-border: #b91c1c;
+  --color-error-bg: #fef2f2;
+  --color-error-ink: #7f1d1d;
+
+  --color-tip-border: #047857;
+  --color-tip-bg: #ecfdf5;
+  --color-tip-ink: #064e3b;
+
+  --color-warn-border: #b45309;
+  --color-warn-bg: #fffbeb;
+  --color-warn-ink: #78350f;
+
+  --color-pron-border: #4338ca;
+  --color-pron-bg: #eef2ff;
+  --color-pron-ink: #312e81;
+
+  --radius-sm: 3px;
+  --radius-md: 5px;
+}
+
+body.track-pt-br,
+article.track-pt-br {
+  --color-primary: #0f766e;
+  --color-primary-dark: #115e59;
+  --color-primary-soft: #f0fdfa;
+  --color-primary-border: #99f6e4;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+@page {
+  size: A4;
+  margin: 16mm 16mm 18mm 16mm;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--color-bg);
+  color: var(--color-body);
+  font-family: var(--font-body);
+  font-size: 10pt;
+  line-height: 1.56;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+  font-variant-emoji: text;
+}
+
+/* ==========================================================================
+   1. Editorial Unit Header
+   ========================================================================== */
+.unit-header {
+  border-top: 3px solid var(--color-primary);
+  border-bottom: 1px solid var(--color-border);
+  padding: 10px 0 12px 0;
+  margin-bottom: 14px;
+}
+
+.unit-topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 7.8pt;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  margin-bottom: 10px;
+}
+
+.unit-lang {
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.unit-sep {
+  margin: 0 4px;
+  color: var(--color-border);
+}
+
+.unit-area {
+  font-weight: 600;
+  color: var(--color-secondary);
+}
+
+.unit-topbar-right {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+}
+
+.unit-meta-item {
+  font-weight: 600;
+}
+
+.unit-meta-context {
+  font-weight: 700;
+  color: var(--color-ink);
+  background: var(--color-surface-alt);
+  border: 1px solid var(--color-border);
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+}
+
+.unit-title-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.unit-number-box {
+  flex-shrink: 0;
+  background: var(--color-primary);
+  color: #ffffff;
+  font-family: var(--font-heading);
+  font-size: 8.5pt;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  margin-top: 2px;
+}
+
+.unit-title-block {
+  flex: 1;
+}
+
+.unit-title {
+  margin: 0 0 4px 0;
+  font-family: var(--font-heading);
+  font-size: 17.5pt;
+  line-height: 1.2;
+  font-weight: 700;
+  color: var(--color-ink);
+  letter-spacing: -0.015em;
+}
+
+.unit-summary {
+  margin: 0;
+  font-size: 9.6pt;
+  line-height: 1.45;
+  color: var(--color-muted);
+}
+
+/* ==========================================================================
+   2. Two-Level Curriculum Positioning Map
+   ========================================================================== */
+.curriculum-map {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  margin: 0 0 18px 0;
+  break-inside: avoid;
+}
+
+.cmap-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.cmap-kicker {
+  font-size: 7.8pt;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-primary);
+}
+
+.cmap-hint {
+  font-size: 7.8pt;
+  color: var(--color-subtle);
+}
+
+.cmap-areas-bar {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 4px;
+  margin-bottom: 9px;
+}
+
+.cmap-area-pill {
+  background: #ffffff;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-sm);
+  padding: 4px 6px;
+  font-size: 7.4pt;
+  line-height: 1.25;
+  color: var(--color-subtle);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.cmap-area-num {
+  font-weight: 700;
+  font-size: 7pt;
+}
+
+.cmap-area-name {
+  font-weight: 600;
+}
+
+.cmap-area-pill.is-active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #ffffff;
+}
+
+.cmap-zoom-panel {
+  background: #ffffff;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+}
+
+.cmap-zoom-header {
+  font-size: 8.3pt;
+  color: var(--color-muted);
+  padding-bottom: 6px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.cmap-zoom-header strong {
+  color: var(--color-ink);
+}
+
+.cmap-units-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.cmap-unit-item {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 3px 6px;
+  border-radius: var(--radius-sm);
+  font-size: 8.3pt;
+  color: var(--color-muted);
+}
+
+.cmap-unit-code {
+  font-family: var(--font-mono);
+  font-size: 7.8pt;
+  font-weight: 700;
+  color: var(--color-subtle);
+  min-width: 24px;
+}
+
+.cmap-unit-title {
+  flex: 1;
+}
+
+.cmap-unit-item.is-current {
+  background: var(--color-primary-soft);
+  border: 1px solid var(--color-primary-border);
+  color: var(--color-ink);
+  font-weight: 700;
+}
+
+.cmap-unit-item.is-current .cmap-unit-code {
+  color: var(--color-primary);
+}
+
+.cmap-status {
+  font-size: 7pt;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 1px 5px;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+
+.cmap-status.is-current {
+  background: var(--color-primary);
+  color: #ffffff;
+}
+
+.cmap-status.is-available {
+  background: var(--color-surface-alt);
+  color: var(--color-secondary);
+  border: 1px solid var(--color-border);
+}
+
+.cmap-status.is-planned {
+  color: var(--color-subtle);
+  font-weight: 500;
+}
+
+.cmap-cross-refs {
+  margin-top: 8px;
+  padding-top: 7px;
+  border-top: 1px solid var(--color-border-light);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 8.3pt;
+}
+
+.cmap-cross-label {
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.cmap-cross-target {
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
+.cmap-blueprint-bar {
+  margin-top: 7px;
+  padding-top: 6px;
+  border-top: 1px solid var(--color-border-light);
+  font-size: 7.9pt;
+  color: var(--color-muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: baseline;
+}
+
+.cmap-blueprint-label {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-size: 7.3pt;
+  color: var(--color-secondary);
+}
+
+.cmap-blueprint-items {
+  color: var(--color-ink);
+  font-weight: 500;
+}
+
+/* ==========================================================================
+   3. Section Headings & Body Typography
+   ========================================================================== */
+h2 {
+  font-family: var(--font-heading);
+  font-size: 12.5pt;
+  font-weight: 700;
+  margin: 20px 0 8px 0;
+  padding-bottom: 4px;
+  border-bottom: 1.5px solid var(--color-ink);
+  color: var(--color-ink);
+  break-after: avoid;
+}
+
+h3 {
+  font-family: var(--font-heading);
+  font-size: 10.5pt;
+  font-weight: 700;
+  margin: 14px 0 6px 0;
+  color: var(--color-ink);
+  break-after: avoid;
+}
+
+p {
+  margin: 0 0 9px 0;
+}
+
+hr {
+  border: 0;
+  border-top: 1px solid var(--color-border-light);
+  margin: 16px 0;
+}
+
+ul, ol {
+  margin: 0 0 11px 0;
+  padding-left: 20px;
+}
+
+li {
+  margin-bottom: 4px;
+}
+
+li.task-item {
+  list-style: none;
+  margin-left: -16px;
+  padding-left: 18px;
+  position: relative;
+  display: block;
+}
+
+.task-box {
+  position: absolute;
+  left: 0;
+  top: 4px;
+  width: 10px;
+  height: 10px;
+  border: 1.3px solid var(--color-secondary);
+  border-radius: 2px;
+  background: #ffffff;
+}
+
+code {
+  font-family: var(--font-mono);
+  font-size: 9pt;
+  background: var(--color-surface-alt);
+  color: var(--color-ink);
+  padding: 1px 4px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-light);
+}
+
+pre {
+  background: var(--color-ink);
+  color: #f8fafc;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 10px 0 14px 0;
+  break-inside: avoid;
+}
+
+pre code {
+  background: transparent;
+  color: inherit;
+  border: 0;
+  padding: 0;
+  font-size: 8.8pt;
+}
+
+/* ==========================================================================
+   4. Language Bridge Panel (```bridge) — Prominent Contrastive Section
+   ========================================================================== */
+.language-bridge-panel {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  padding: 12px 14px;
+  margin: 10px 0 16px 0;
+  break-inside: avoid;
+}
+
+.bridge-cards-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.bridge-card {
+  background: #ffffff;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  font-size: 9.3pt;
+}
+
+.bridge-card-base {
+  border-top: 3px solid #0f766e;
+}
+
+.bridge-card-target {
+  border-top: 3px solid var(--color-primary);
+}
+
+.bridge-card-title {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 9.6pt;
+  color: var(--color-ink);
+  margin-bottom: 2px;
+}
+
+.bridge-card-subtitle {
+  font-size: 8pt;
+  font-weight: 600;
+  color: var(--color-subtle);
+  padding-bottom: 6px;
+  margin-bottom: 7px;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.bridge-card-body ul {
+  padding-left: 16px;
+  margin-bottom: 0;
+}
+
+.bridge-card-body p:last-child {
+  margin-bottom: 0;
+}
+
+.bridge-parallels {
+  margin-top: 10px;
+  background: #ffffff;
+  border: 1px solid var(--color-primary-border);
+  border-left: 3.5px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  padding: 9px 12px;
+  font-size: 9.2pt;
+}
+
+.bridge-parallels-title {
+  font-size: 8.2pt;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-primary);
+  margin-bottom: 5px;
+}
+
+.bridge-parallels ul {
+  margin: 0;
+  padding-left: 17px;
+}
+
+.bridge-parallels li {
+  margin-bottom: 4px;
+}
+
+.bridge-parallels li:last-child {
+  margin-bottom: 0;
+}
+
+.bridge-ref-bar {
+  margin-top: 9px;
+  padding-top: 7px;
+  border-top: 1px solid var(--color-border-light);
+  font-size: 8.4pt;
+  color: var(--color-muted);
+}
+
+.bridge-ref-bar strong {
+  color: var(--color-ink);
+}
+
+/* ==========================================================================
+   5. Cambridge / Routledge Grammar Pattern Box (```pattern)
+   ========================================================================== */
+.grammar-pattern-box {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin: 12px 0 16px 0;
+  background: #ffffff;
+  break-inside: avoid;
+}
+
+.pattern-title {
+  background: var(--color-surface-alt);
+  padding: 7px 12px;
+  font-size: 8.6pt;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-ink);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.pattern-subtitle {
+  background: var(--color-surface);
+  padding: 5px 12px;
+  font-size: 8.5pt;
+  color: var(--color-muted);
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.grammar-pattern-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+  font-size: 9.3pt;
+}
+
+.grammar-pattern-table th {
+  background: var(--color-surface);
+  font-size: 7.7pt;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--color-muted);
+  padding: 6px 9px;
+  border: 0;
+  border-bottom: 1px solid var(--color-border);
+  border-right: 1px solid var(--color-border-light);
+}
+
+.grammar-pattern-table th:last-child {
+  border-right: 0;
+}
+
+.grammar-pattern-table td {
+  padding: 7px 9px;
+  border: 0;
+  border-bottom: 1px solid var(--color-border-light);
+  border-right: 1px solid var(--color-border-light);
+  vertical-align: middle;
+}
+
+.grammar-pattern-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.grammar-pattern-table td:last-child {
+  border-right: 0;
+}
+
+.grammar-pattern-table .cell-role {
+  background: var(--color-surface);
+  font-size: 8.4pt;
+  font-weight: 700;
+  color: var(--color-secondary);
+  width: 17%;
+}
+
+.grammar-pattern-table .cell-structure {
+  background: #ffffff;
+  color: var(--color-ink);
+  font-size: 9.5pt;
+}
+
+.grammar-pattern-table .cell-meaning {
+  background: var(--color-surface);
+  color: var(--color-muted);
+  font-style: italic;
+  font-size: 8.9pt;
+  width: 25%;
+}
+
+/* ==========================================================================
+   5B. Word Phonetics & Articulation Box (```phonetics) & Glossary (```glossary)
+   ========================================================================== */
+.phonetics-box {
+  margin: 12px 0 16px 0;
+  background: #ffffff;
+}
+
+.phonetics-title {
+  background: var(--color-pron-bg);
+  color: var(--color-pron-ink);
+  padding: 7px 12px;
+  font-family: var(--font-heading);
+  font-size: 8.6pt;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border: 1px solid var(--color-border);
+  border-top: 3px solid var(--color-pron-border);
+  border-bottom: 0;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  break-after: avoid;
+  page-break-after: avoid;
+}
+
+.phonetics-subtitle {
+  background: var(--color-surface);
+  padding: 5px 12px;
+  font-size: 8.5pt;
+  color: var(--color-muted);
+  border-left: 1px solid var(--color-border);
+  border-right: 1px solid var(--color-border);
+  border-top: 1px solid var(--color-border-light);
+  break-after: avoid;
+  page-break-after: avoid;
+}
+
+.phonetics-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+  font-size: 9.2pt;
+  break-inside: auto;
+}
+
+.phonetics-table thead {
+  break-after: avoid;
+  page-break-after: avoid;
+}
+
+.phonetics-table tr {
+  break-inside: avoid;
+}
+
+.phonetics-table th {
+  background: var(--color-surface);
+  font-size: 7.8pt;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--color-muted);
+  padding: 6px 10px;
+  border: 1px solid var(--color-border);
+}
+
+.phonetics-table td {
+  padding: 7px 10px;
+  border: 1px solid var(--color-border-light);
+  border-left-color: var(--color-border);
+  border-right-color: var(--color-border);
+  vertical-align: top;
+}
+
+.phonetics-table tr:last-child td {
+  border-bottom-color: var(--color-border);
+}
+
+.phon-cell-word {
+  width: 24%;
+  color: var(--color-ink);
+  background: #ffffff;
+}
+
+.phon-cell-sound {
+  width: 27%;
+  background: var(--color-surface);
+}
+
+.phon-ipa {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 8.5pt;
+  color: var(--color-pron-ink);
+  background: var(--color-pron-bg);
+  border: 1px solid #c7d2fe;
+  padding: 1px 5px;
+  border-radius: var(--radius-sm);
+  margin-right: 4px;
+  margin-bottom: 2px;
+}
+
+.phon-guide {
+  display: inline-block;
+  font-weight: 700;
+  font-size: 9pt;
+  color: var(--color-ink);
+}
+
+.phon-cell-tip {
+  width: 49%;
+  font-size: 9pt;
+  color: var(--color-body);
+}
+
+.phonetics-tips {
+  border: 1px solid var(--color-border);
+  border-top: 0;
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  background: var(--color-surface);
+  padding: 9px 12px;
+  font-size: 9.1pt;
+  break-inside: avoid;
+}
+
+.phonetics-tips-title {
+  font-size: 8pt;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-pron-ink);
+  margin-bottom: 5px;
+}
+
+.phonetics-tips ul {
+  margin: 0;
+  padding-left: 17px;
+}
+
+.phonetics-tips li:last-child {
+  margin-bottom: 0;
+}
+
+.glossary-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 10px 0 14px 0;
+}
+
+.glossary-group {
+  background: #ffffff;
+}
+
+.glossary-group-title {
+  background: var(--color-surface-alt);
+  padding: 6.5px 12px;
+  font-family: var(--font-heading);
+  font-size: 8.4pt;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-ink);
+  border: 1px solid var(--color-border);
+  border-bottom: 0;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  break-after: avoid;
+  page-break-after: avoid;
+}
+
+.glossary-concepts-table,
+.glossary-words-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 0;
+  font-size: 9.1pt;
+  break-inside: auto;
+}
+
+.glossary-concepts-table thead,
+.glossary-words-table thead {
+  break-after: avoid;
+  page-break-after: avoid;
+}
+
+.glossary-concepts-table tr,
+.glossary-words-table tr {
+  break-inside: avoid;
+}
+
+.glossary-concepts-table th,
+.glossary-words-table th {
+  background: var(--color-surface);
+  font-size: 7.7pt;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--color-muted);
+  padding: 5.5px 10px;
+  border: 1px solid var(--color-border);
+}
+
+.glossary-concepts-table td,
+.glossary-words-table td {
+  padding: 6.5px 10px;
+  border: 1px solid var(--color-border-light);
+  border-left-color: var(--color-border);
+  border-right-color: var(--color-border);
+  border-bottom-color: var(--color-border-light);
+  vertical-align: top;
+}
+
+.glossary-concepts-table tr:last-child td,
+.glossary-words-table tr:last-child td {
+  border-bottom-color: var(--color-border);
+}
+
+.glossary-term-cell {
+  width: 27%;
+  background: var(--color-surface);
+  color: var(--color-ink);
+}
+
+.glossary-cat {
+  display: block;
+  font-size: 7.3pt;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--color-subtle);
+  margin-top: 2px;
+}
+
+.glossary-word-cell {
+  width: 19%;
+  color: var(--color-primary-dark);
+  background: var(--color-surface);
+}
+
+.glossary-class-cell {
+  width: 17%;
+  font-size: 8.4pt;
+  font-style: italic;
+  color: var(--color-muted);
+}
+
+.glossary-pron-cell {
+  width: 22%;
+  font-family: var(--font-mono);
+  font-size: 8.3pt;
+  color: var(--color-ink);
+}
+
+.glossary-def-cell {
+  color: var(--color-body);
+}
+
+/* ==========================================================================
+   6. Modular Target-Language Bridges in PT-BR Units (.bridges.yaml)
+   ========================================================================== */
+.target-bridges-group {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 12px 0 16px 0;
+}
+
+.target-bridge-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: #ffffff;
+  padding: 12px 14px;
+  break-inside: avoid;
+}
+
+.target-bridge-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.target-bridge-tag {
+  font-size: 7.4pt;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary-border);
+  padding: 2px 7px;
+  border-radius: var(--radius-sm);
+}
+
+.target-bridge-title {
+  margin: 0;
+  font-size: 11pt;
+  color: var(--color-ink);
+}
+
+.target-bridge-summary {
+  font-size: 9.3pt;
+  color: var(--color-muted);
+  margin-bottom: 8px;
+}
+
+.target-bridge-notes {
+  margin: 8px 0 0 0;
+  font-size: 9pt;
+}
+
+.target-bridge-refs {
+  margin-top: 8px;
+  padding-top: 7px;
+  border-top: 1px solid var(--color-border-light);
+  font-size: 8.5pt;
+  color: var(--color-muted);
+}
+
+/* ==========================================================================
+   7. Standard Tables, Diagrams, Charts & Timelines
+   ========================================================================== */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 10px 0 15px 0;
+  font-size: 9.4pt;
+  break-inside: avoid;
+}
+
+th, td {
+  border: 1px solid var(--color-border);
+  padding: 6.5px 9px;
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  background: var(--color-surface-alt);
+  font-weight: 700;
+  font-size: 8.6pt;
+  color: var(--color-ink);
+}
+
+tbody tr:nth-child(even) {
+  background: #fcfdff;
+}
+
+.diagram-container {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 12px 10px;
+  margin: 12px 0 15px 0;
+  text-align: center;
+  break-inside: avoid;
+}
+
+.diagram-container pre.mermaid {
+  background: transparent;
+  color: var(--color-ink);
+  padding: 0;
+  margin: 0;
+  border: 0;
+  display: flex;
+  justify-content: center;
+}
+
+.diagram-container svg {
+  max-width: 100% !important;
+  max-height: 290px !important;
+  width: 100% !important;
+  height: auto !important;
+}
+
+.visual-chart,
+.visual-timeline,
+.visual-formula {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 11px 14px;
+  margin: 12px 0 15px 0;
+  break-inside: avoid;
+}
+
+.visual-title {
+  font-weight: 700;
+  font-size: 9.5pt;
+  color: var(--color-ink);
+  margin: 0 0 9px 0;
+}
+
+.chart-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.chart-row-head {
+  display: flex;
+  justify-content: space-between;
+  font-size: 9pt;
+  margin-bottom: 3px;
+}
+
+.chart-label {
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.chart-val {
+  font-weight: 700;
+  color: var(--color-primary);
+  font-family: var(--font-mono);
+  font-size: 8.6pt;
+}
+
+.chart-track {
+  width: 100%;
+  height: 7px;
+  background: var(--color-border-light);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.chart-fill {
+  height: 100%;
+  background: var(--color-primary);
+  border-radius: 999px;
+}
+
+.chart-note {
+  font-size: 8.3pt;
+  color: var(--color-muted);
+  margin-top: 2px;
+}
+
+.chart-source {
+  margin-top: 9px;
+  padding-top: 6px;
+  border-top: 1px solid var(--color-border-light);
+  font-size: 8pt;
+  color: var(--color-subtle);
+}
+
+.chart-source a {
+  color: var(--color-primary);
+  text-decoration: underline;
+  word-break: break-all;
+}
+
+.timeline-track {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  position: relative;
+  padding-top: 6px;
+}
+
+.timeline-track::before {
+  content: "";
+  position: absolute;
+  top: 13px;
+  left: 24px;
+  right: 24px;
+  height: 2px;
+  background: var(--color-primary-border);
+  z-index: 0;
+}
+
+.timeline-step {
+  flex: 1;
+  position: relative;
+  z-index: 1;
+  text-align: center;
+}
+
+.timeline-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2.5px solid var(--color-primary);
+  margin: 0 auto 5px auto;
+}
+
+.timeline-step.is-active .timeline-dot {
+  background: var(--color-primary);
+}
+
+.timeline-time {
+  font-size: 7.8pt;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--color-primary);
+}
+
+.timeline-desc {
+  font-size: 8.6pt;
+  color: var(--color-body);
+}
+
+/* ==========================================================================
+   8. Editorial Callout Boxes (Zero Emojis — Semantic Borders & Labels)
+   ========================================================================== */
+.callout {
+  border: 1px solid var(--color-border-light);
+  border-left: 3.5px solid var(--color-primary);
+  background: var(--color-surface);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  padding: 9px 13px;
+  margin: 12px 0;
+  break-inside: avoid;
+}
+
+.callout-title {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 8.3pt;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-primary);
+  margin-bottom: 4px;
+}
+
+.callout-body {
+  font-size: 9.4pt;
+}
+
+.callout-body p:last-child,
+.callout-body ul:last-child,
+.callout-body ol:last-child {
+  margin-bottom: 0;
+}
+
+.callout-error {
+  border-left-color: var(--color-error-border);
+  background: var(--color-error-bg);
+}
+.callout-error .callout-title {
+  color: var(--color-error-ink);
+}
+
+.callout-tip {
+  border-left-color: var(--color-tip-border);
+  background: var(--color-tip-bg);
+}
+.callout-tip .callout-title {
+  color: var(--color-tip-ink);
+}
+
+.callout-warn {
+  border-left-color: var(--color-warn-border);
+  background: var(--color-warn-bg);
+}
+.callout-warn .callout-title {
+  color: var(--color-warn-ink);
+}
+
+.callout-pronunciation {
+  border-left-color: var(--color-pron-border);
+  background: var(--color-pron-bg);
+}
+.callout-pronunciation .callout-title {
+  color: var(--color-pron-ink);
+}
+
+.callout-summary {
+  border: 1px solid var(--color-border);
+  border-left: 4px solid var(--color-ink);
+  background: var(--color-surface-alt);
+}
+.callout-summary .callout-title {
+  color: var(--color-ink);
+}
+
+.callout-vocab {
+  border-left-color: var(--color-secondary);
+  background: var(--color-surface);
+}
+.callout-vocab .callout-title {
+  color: var(--color-secondary);
+}
+
+.callout-practice {
+  border: 1px solid var(--color-primary-border);
+  border-left: 4px solid var(--color-primary);
+  background: var(--color-primary-soft);
+}
+.callout-practice .callout-title {
+  color: var(--color-primary-dark);
+}
+
+.callout-assessment {
+  border-left-color: var(--color-primary);
+  background: var(--color-surface);
+}
+
+/* ==========================================================================
+   9. Answer Key & Roadmap Cover
+   ========================================================================== */
+.page-break {
+  break-before: page;
+  page-break-before: always;
+}
+
+.exercises-section h2:first-child {
+  margin-top: 0;
+  color: var(--color-primary-dark);
+  border-bottom: 2px solid var(--color-primary);
+}
+
+.answer-key-section h2:first-child {
+  margin-top: 0;
+  color: var(--color-primary);
+  border-bottom: 2px solid var(--color-primary);
+}
+
+.roadmap-cover {
+  border-top: 4px solid var(--color-primary);
+  padding-top: 12px;
+}
+
+.roadmap-title {
+  font-family: var(--font-heading);
+  font-size: 22pt;
+  line-height: 1.18;
+  margin: 6px 0 8px 0;
+  color: var(--color-ink);
+}
+
+.roadmap-subtitle {
+  font-size: 10.5pt;
+  color: var(--color-muted);
+  margin: 0 0 20px 0;
+}
+
+.roadmap-toc {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 15px 18px;
+}
+
+.roadmap-toc h2 {
+  margin-top: 0;
+  font-size: 11pt;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.toc-list {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.toc-list li {
+  margin-bottom: 10px;
+}
+
+.toc-list a {
+  text-decoration: none;
+  color: var(--color-primary);
+  font-weight: 700;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.toc-chapter-level {
+  font-size: 8pt;
+  color: var(--color-subtle);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.toc-chapter-summary {
+  font-size: 9pt;
+  color: var(--color-muted);
+  margin: 2px 0 0 0;
+}
+
+.roadmap-upcoming {
+  margin-top: 15px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border);
+}
+
+.roadmap-upcoming h3 {
+  margin: 0 0 7px 0;
+  font-size: 9pt;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--color-muted);
+}
+
+.upcoming-list {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 8.9pt;
+}
+
+.upcoming-meta {
+  font-size: 8pt;
+  color: var(--color-primary);
+  font-weight: 700;
+}
+
+.upcoming-note {
+  color: var(--color-muted);
+}

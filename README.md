@@ -11,6 +11,11 @@ Todos os capítulos estão organizados em **6 módulos numerados** dentro de [`d
 ```text
 guia-arquitetura-ia/
 ├── README.md                                  ◄── Índice geral e trilha de leitura
+├── Makefile                                   ◄── Automação (make site, make preview, make submodules)
+├── engine/                                    ◄── Motor do Visualizador Web estilo VS Code (GitHub Pages)
+├── repos/                                     ◄── Projeto Guarda-Chuva: submódulos Git e links p/ outros repos
+│   ├── README.md
+│   └── catalog.yaml
 └── docs/
     ├── 01-fundamentos/                        O que é um LLM, tensores, inference engines e fine-tuning
     │   ├── 01-o-que-significa-aprender.md
@@ -42,6 +47,35 @@ guia-arquitetura-ia/
     │   └── 06-omniroute-ai-gateway.md
     └── 06-adocao-empresa/                     Estratégia prática para estruturar IA em uma organização
         └── 01-guia-ia-na-empresa.md
+```
+
+---
+
+## 💻 Visualizador Web (Estilo VS Code) e Arquitetura Guarda-Chuva (`repos/`)
+
+Este repositório inclui um **leitor web estático inspirado no VS Code** (`engine/site.py` + `engine/web/`) com árvore de capítulos, contorno de seções (`H1–H3`), busca global (`Ctrl+Shift+F`), Command Palette (`⌘P / Ctrl+P`), leitura dividida lado a lado (`⌘\`), renderização de diagramas Mermaid e catálogo de submódulos:
+
+```bash
+# 1. Instalar dependências do motor (requer uv)
+make setup
+
+# 2. Gerar o portal estático em dist/site/
+make site
+
+# 3. Gerar e abrir servidor local em http://localhost:8080
+make preview
+```
+
+### 🧩 Repositório Guarda-Chuva (`repos/` — Git Submodules & Links)
+
+A pasta [`repos/`](repos/README.md) abriga outros repositórios práticos de IA publicados no GitHub (acoplados via `git submodule` ou listados em [`repos/catalog.yaml`](repos/catalog.yaml)):
+
+```bash
+# Acoplar um novo repositório publicado no GitHub dentro de repos/<nome>
+make submodule-add URL=https://github.com/matheusmaiadev/<nome-do-repo>.git NAME=<nome-do-repo>
+
+# Atualizar todos os submódulos acoplados
+make submodules
 ```
 
 ---

@@ -3,3 +3,9 @@
 .env
 .env.*
 node_modules/
+dist/
+engine/.venv/
+engine/.cache/
+engine/__pycache__/
+**/__pycache__/
+*.pyc
